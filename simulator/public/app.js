@@ -551,11 +551,41 @@ function selectService(service) {
   updateFare();
 }
 
+// PARCEL CATEGORY & WEIGHT SELECTION CONTROLS
+let selectedParcelCategory = 'DOCUMENTS';
+
+function selectParcelCategory(category, el) {
+  selectedParcelCategory = category;
+  const pills = document.querySelectorAll('#parcelCategoryPills .pill');
+  pills.forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const catBadge = document.getElementById('selectedCategoryBadge');
+  const catNames = {
+    'DOCUMENTS': '📄 Documents',
+    'BOX': '📦 Box',
+    'FOOD': '🍔 Food',
+    'ELECTRONICS': '📱 Electronics'
+  };
+  if (catBadge) {
+    catBadge.innerText = catNames[category] || category;
+  }
+  updateFare();
+}
+
+function onParcelWeightChange(weightVal) {
+  const customRow = document.getElementById('customWeightRow');
+  if (customRow) {
+    customRow.classList.toggle('hidden', weightVal !== 'CUSTOM_50_PLUS');
+  }
+  updateFare();
+}
+
 // COMPREHENSIVE DYNAMIC FARE ENGINE
 function updateFare() {
   const cfg = getPricingConfig();
   const isBike = currentService === 'BIKE_TAXI';
-  const weight = document.getElementById('parcelWeight') ? document.getElementById('parcelWeight').value : 'UP_TO_2KG';
+  const weight = document.getElementById('parcelWeight') ? document.getElementById('parcelWeight').value : 'UP_TO_20KG';
 
   // 1. Get Platform Access Fee from Admin Config
   const platformFee = typeof cfg.platformFee === 'number' ? cfg.platformFee : 3.00;
@@ -641,17 +671,44 @@ function updateFare() {
     btnLabel = `BOOK ${activeCalc.v.name.toUpperCase()}`;
   } else {
     // Parcel Delivery
-    const isHeavy = weight === 'TWO_TO_FIVE_KG';
-    finalBase = isHeavy ? 50 : 35;
-    finalDist = isHeavy ? 14 : 12;
+    // Weight options: 'UP_TO_20KG', '20_TO_50KG', 'CUSTOM_50_PLUS' (also legacy 'UP_TO_2KG' / 'TWO_TO_FIVE_KG')
+    const customKgInput = document.getElementById('customWeightInput');
+    const customKg = customKgInput ? (parseInt(customKgInput.value, 10) || 55) : 55;
+
+    let catIcon = '📄';
+    let catTitle = 'Documents';
+    if (selectedParcelCategory === 'BOX') { catIcon = '📦'; catTitle = 'Box'; }
+    else if (selectedParcelCategory === 'FOOD') { catIcon = '🍔'; catTitle = 'Food'; }
+    else if (selectedParcelCategory === 'ELECTRONICS') { catIcon = '📱'; catTitle = 'Electronics'; }
+
+    let weightLabel = 'Up to 20 kg';
+    if (weight === 'CUSTOM_50_PLUS') {
+      finalBase = 120 + Math.max(0, customKg - 50) * 2;
+      finalDist = 20;
+      weightLabel = `${customKg} kg (Commercial Freight)`;
+      serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
+      serviceDesc = `Custom Heavy Freight (${customKg} kg) • Dedicated Two-Wheeler / Cargo`;
+    } else if (weight === '20_TO_50KG' || weight === 'TWO_TO_FIVE_KG') {
+      finalBase = 75;
+      finalDist = 16;
+      weightLabel = '20 kg to 50 kg';
+      serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
+      serviceDesc = `Heavy Package (20 to 50 kg) • Safe Handling & Secure Strap`;
+    } else {
+      // UP_TO_20KG (or UP_TO_2KG)
+      finalBase = 45;
+      finalDist = 12;
+      weightLabel = 'Up to 20 kg';
+      serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
+      serviceDesc = `Standard Courier (${catTitle}) • Up to 20 kg Package`;
+    }
+
     finalSurgeAmt = Math.round((finalBase + finalDist) * (surgeMultiplier - 1.0));
     const parcelSubtotal = (finalBase + finalDist) + finalSurgeAmt;
     finalGst = Math.round((parcelSubtotal + platformFee + convFee) * 0.05);
     finalTotal = Math.round(parcelSubtotal + platformFee + convFee + finalGst);
-    serviceName = isHeavy ? 'Holido Parcel Heavy (📦)' : 'Holido Parcel Express (📦)';
-    serviceDesc = isHeavy ? 'Medium Box / Package (2 kg to 5 kg)' : 'Standard Documents / Food (< 2 kg)';
     safetyMsg = '🛡️ Secure Doorstep OTP Verification & Sealed Transit';
-    btnLabel = 'BOOK HOLIDO PARCEL';
+    btnLabel = `BOOK HOLIDO ${catTitle.toUpperCase()} PARCEL`;
   }
 
   // Update UI Elements
@@ -716,16 +773,29 @@ function customerRequestRide() {
 
   const selectedVeh = VEHICLE_DATA[selectedVehicleType] || VEHICLE_DATA.BIKE;
 
+  const weight = document.getElementById('parcelWeight') ? document.getElementById('parcelWeight').value : 'UP_TO_20KG';
+  const customKgInput = document.getElementById('customWeightInput');
+  const customKg = customKgInput ? (parseInt(customKgInput.value, 10) || 55) : 55;
+
+  let parcelDetailsText = '';
+  if (!isBike) {
+    const weightLabel = weight === 'CUSTOM_50_PLUS' ? `${customKg} kg` : (weight === '20_TO_50KG' ? '20 to 50 kg' : 'Up to 20 kg');
+    parcelDetailsText = `${selectedParcelCategory} (${weightLabel})`;
+  }
+
   activeRide = {
     id: 'ride-' + Math.floor(Math.random() * 8999 + 1000),
     serviceType: currentService,
     vehicleType: isBike ? selectedVehicleType : 'PARCEL',
-    vehicleObj: isBike ? selectedVeh : { name: 'Holido Courier', icon: '📦' },
+    vehicleObj: isBike ? selectedVeh : { name: `Parcel - ${parcelDetailsText}`, icon: '📦' },
     status: 'SEARCHING_CAPTAIN',
     otp: otp,
     fare: fareVal,
     earning: earningVal,
-    payment: { ...selectedPaymentMethod }
+    payment: { ...selectedPaymentMethod },
+    parcelCategory: selectedParcelCategory,
+    parcelWeight: weight,
+    parcelDetails: parcelDetailsText
   };
 
   document.getElementById('activeRideCount').innerText = '1';
@@ -763,7 +833,7 @@ function triggerIncomingCaptainAlert() {
 
   let offerTitle = 'BIKE TAXI REQUEST';
   if (currentService === 'PARCEL_DELIVERY') {
-    offerTitle = 'PARCEL COURIER REQUEST';
+    offerTitle = `📦 PARCEL (${activeRide.parcelDetails || 'STANDARD'})`;
   } else if (activeRide && activeRide.vehicleObj) {
     offerTitle = `${activeRide.vehicleObj.icon} ${activeRide.vehicleObj.name.toUpperCase()} REQUEST`;
   }

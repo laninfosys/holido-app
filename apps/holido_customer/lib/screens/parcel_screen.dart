@@ -11,7 +11,7 @@ class ParcelScreen extends StatefulWidget {
 
 class _ParcelScreenState extends State<ParcelScreen> {
   String _selectedCategory = 'DOCUMENTS';
-  String _selectedWeight = 'UP_TO_2KG';
+  String _selectedWeight = 'UP_TO_20KG';
 
   final TextEditingController _receiverName = TextEditingController(text: 'Rahul Verma');
   final TextEditingController _receiverPhone = TextEditingController(text: '+91 98765 00000');
@@ -153,21 +153,32 @@ class _ParcelScreenState extends State<ParcelScreen> {
               children: [
                 Expanded(
                   child: ChoiceChip(
-                    label: const Center(child: Text('Up to 2 kg')),
-                    selected: _selectedWeight == 'UP_TO_2KG',
+                    label: const Center(child: Text('Up to 20 kg', style: TextStyle(fontSize: 12))),
+                    selected: _selectedWeight == 'UP_TO_20KG',
                     onSelected: (val) {
-                      setState(() => _selectedWeight = 'UP_TO_2KG');
+                      setState(() => _selectedWeight = 'UP_TO_20KG');
                       _fetchParcelFare();
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ChoiceChip(
-                    label: const Center(child: Text('2 kg to 5 kg')),
-                    selected: _selectedWeight == 'TWO_TO_FIVE_KG',
+                    label: const Center(child: Text('20 to 50 kg', style: TextStyle(fontSize: 12))),
+                    selected: _selectedWeight == '20_TO_50KG',
                     onSelected: (val) {
-                      setState(() => _selectedWeight = 'TWO_TO_FIVE_KG');
+                      setState(() => _selectedWeight = '20_TO_50KG');
+                      _fetchParcelFare();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Center(child: Text('50+ kg Custom', style: TextStyle(fontSize: 12))),
+                    selected: _selectedWeight == 'CUSTOM_50_PLUS',
+                    onSelected: (val) {
+                      setState(() => _selectedWeight = 'CUSTOM_50_PLUS');
                       _fetchParcelFare();
                     },
                   ),

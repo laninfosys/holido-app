@@ -14,8 +14,8 @@ export class PricingService {
   };
 
   private static readonly PARCEL_CONFIG_LIGHT = {
-    // Up to 2kg
-    baseFare: 35.0,
+    // Up to 20kg (Standard)
+    baseFare: 45.0,
     baseDistanceKm: 1.5,
     perKmRate: 12.0,
     perMinRate: 1.0,
@@ -25,14 +25,26 @@ export class PricingService {
   };
 
   private static readonly PARCEL_CONFIG_HEAVY = {
-    // 2kg to 5kg
-    baseFare: 50.0,
+    // 20kg to 50kg
+    baseFare: 75.0,
     baseDistanceKm: 1.5,
-    perKmRate: 14.0,
+    perKmRate: 16.0,
     perMinRate: 1.0,
     freeMinutes: 10,
     platformFee: 5.0,
     gstRate: 0.05,
+  };
+
+  private static readonly PARCEL_CONFIG_CUSTOM = {
+    // 50+ kg Custom Commercial Freight
+    baseFare: 120.0,
+    baseDistanceKm: 1.5,
+    perKmRate: 20.0,
+    perMinRate: 1.5,
+    freeMinutes: 10,
+    platformFee: 6.0,
+    gstRate: 0.05,
+  };
   };
 
   /**
@@ -42,7 +54,7 @@ export class PricingService {
     pickup: Coordinates,
     drop: Coordinates,
     serviceType: ServiceType,
-    weightCategory: 'UP_TO_2KG' | 'TWO_TO_FIVE_KG' = 'UP_TO_2KG',
+    weightCategory: 'UP_TO_20KG' | '20_TO_50KG' | 'CUSTOM_50_PLUS' | 'UP_TO_2KG' | 'TWO_TO_FIVE_KG' = 'UP_TO_20KG',
     surgeMultiplier: number = 1.0
   ): FareEstimate {
     const distanceKm = GeoService.calculateDistance(pickup, drop);
@@ -50,10 +62,13 @@ export class PricingService {
 
     let config = this.BIKE_CONFIG;
     if (serviceType === 'PARCEL_DELIVERY') {
-      config =
-        weightCategory === 'TWO_TO_FIVE_KG'
-          ? this.PARCEL_CONFIG_HEAVY
-          : this.PARCEL_CONFIG_LIGHT;
+      if (weightCategory === 'CUSTOM_50_PLUS') {
+        config = this.PARCEL_CONFIG_CUSTOM;
+      } else if (weightCategory === '20_TO_50KG' || weightCategory === 'TWO_TO_FIVE_KG') {
+        config = this.PARCEL_CONFIG_HEAVY;
+      } else {
+        config = this.PARCEL_CONFIG_LIGHT;
+      }
     }
 
     const baseFare = config.baseFare;

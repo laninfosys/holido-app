@@ -75,11 +75,20 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return round(max(0.5, R * c * 1.25), 1)
 
-def calculate_fare(distance_km, service_type='BIKE_TAXI', weight='UP_TO_2KG'):
+def calculate_fare(distance_km, service_type='BIKE_TAXI', weight='UP_TO_20KG', custom_kg=50):
     if service_type == 'PARCEL_DELIVERY':
-        base = 50.0 if weight == 'TWO_TO_FIVE_KG' else 35.0
-        per_km = 14.0 if weight == 'TWO_TO_FIVE_KG' else 12.0
-        platform = 4.0
+        if weight == 'CUSTOM_50_PLUS':
+            base = 120.0 + max(0, custom_kg - 50) * 2.0
+            per_km = 20.0
+            platform = 6.0
+        elif weight in ('20_TO_50KG', 'TWO_TO_FIVE_KG'):
+            base = 75.0
+            per_km = 16.0
+            platform = 5.0
+        else: # UP_TO_20KG or UP_TO_2KG
+            base = 45.0
+            per_km = 12.0
+            platform = 4.0
     else:
         base = 25.0
         per_km = 10.0
