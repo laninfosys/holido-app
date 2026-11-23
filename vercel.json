@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/admin/(.*)", "destination": "/admin/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/simulator/public/(.*)", "destination": "/simulator/public/$1" },
+    { "source": "/", "destination": "/simulator/public/index.html" }
+  ]
+}

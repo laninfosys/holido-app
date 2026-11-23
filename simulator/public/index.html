@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holido - Bike Taxi & Parcel Ecosystem Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top App Navigation Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/holido_logo.png" alt="Holido Logo" class="brand-logo-img">
+    </div>
+    <div class="quick-stats">
+      <div class="stat-pill"><span class="dot online"></span> 3 Captains Online</div>
+      <div class="stat-pill"><span class="dot active"></span> <span id="activeRideCount">0</span> Active Trips</div>
+      <button class="btn-reset" onclick="window.open('/admin/', '_blank')" style="background:#006FD4; color:#FFF; border-color:#38BDF8">📊 Admin Panel</button>
+      <button class="btn-reset" onclick="resetDemo()">↺ Reset Demo</button>
+    </div>
+  </header>
+
+  <!-- Main Simulator Container -->
+  <main class="simulator-layout">
+    <!-- LEFT DEVICE: CUSTOMER APP -->
+    <div class="device-column">
+      <div class="device-label">Customer Mobile App</div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" id="customerApp">
+          <!-- Customer Header -->
+          <div class="cust-header">
+            <div class="cust-brand-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <img src="assets/holido_logo.png" alt="Holido Logo" style="height: 38px; width: auto; max-width: 170px; object-fit: contain;">
+              <span style="font-size: 10px; font-weight: 800; color: #006FD4; letter-spacing: 1px;">CUSTOMER</span>
+            </div>
+            <div class="service-tabs">
+              <button class="tab-btn active" id="tabBike" onclick="selectService('BIKE_TAXI')">🚴 Bike Taxi</button>
+              <button class="tab-btn" id="tabParcel" onclick="selectService('PARCEL_DELIVERY')">📦 Parcel</button>
+            </div>
+          </div>
+
+          <!-- Screen 1: Booking Selection -->
+          <div id="custBookingView" class="view-panel">
+            <div class="location-card">
+              <div class="loc-row">
+                <span class="loc-icon pickup">●</span>
+                <div class="loc-text">
+                  <span class="loc-label">PICKUP</span>
+                  <input type="text" id="pickupAddr" value="India Gate, New Delhi" readonly>
+                </div>
+              </div>
+              <div class="loc-divider"></div>
+              <div class="loc-row">
+                <span class="loc-icon drop">■</span>
+                <div class="loc-text">
+                  <span class="loc-label">DROP</span>
+                  <input type="text" id="dropAddr" value="Connaught Place, Central Delhi" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vehicle Category Selector (Customer Choice: Bike, Auto, Car) -->
+            <div id="vehicleSelectorContainer" class="vehicle-selector-grid">
+              <div class="vehicle-option-card active" id="vehCard-BIKE" onclick="selectVehicleType('BIKE')">
+                <div class="veh-icon">🏍️</div>
+                <div class="veh-info">
+                  <div class="veh-title">Holido Bike</div>
+                  <div class="veh-sub">1 Passenger • 2m away</div>
+                </div>
+                <div class="veh-fare-box">
+                  <div class="veh-price" id="price-BIKE">₹35</div>
+                  <span class="veh-eta">Fastest</span>
+                </div>
+              </div>
+
+              <div class="vehicle-option-card" id="vehCard-AUTO" onclick="selectVehicleType('AUTO')">
+                <div class="veh-icon">🛺</div>
+                <div class="veh-info">
+                  <div class="veh-title">Holido Auto</div>
+                  <div class="veh-sub">3 Passengers • 3m away</div>
+                </div>
+                <div class="veh-fare-box">
+                  <div class="veh-price" id="price-AUTO">₹52</div>
+                  <span class="veh-eta">Affordable</span>
+                </div>
+              </div>
+
+              <div class="vehicle-option-card" id="vehCard-CAR" onclick="selectVehicleType('CAR')">
+                <div class="veh-icon">🚗</div>
+                <div class="veh-info">
+                  <div class="veh-title">Holido Cab (AC)</div>
+                  <div class="veh-sub">4 Passengers • 4m away</div>
+                </div>
+                <div class="veh-fare-box">
+                  <div class="veh-price" id="price-CAR">₹85</div>
+                  <span class="veh-eta">Comfort</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parcel Extra Fields (Shown when Parcel selected) -->
+            <div id="parcelFields" class="parcel-card hidden">
+              <div class="parcel-title">📦 Parcel Package Details</div>
+              <div class="category-pills">
+                <span class="pill active">Documents</span>
+                <span class="pill">Box</span>
+                <span class="pill">Food</span>
+              </div>
+              <div class="weight-row">
+                <label>Weight:</label>
+                <select id="parcelWeight" onchange="updateFare()">
+                  <option value="UP_TO_2KG">Up to 2 kg (Standard)</option>
+                  <option value="TWO_TO_FIVE_KG">2 kg to 5 kg (+₹15)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Fare Card -->
+            <div class="fare-card">
+              <div class="fare-main">
+                <div class="service-info">
+                  <div class="service-name" id="selectedServiceName">Holido Bike (🏍️)</div>
+                  <div class="service-desc" id="selectedServiceDesc">Fastest way through city traffic • 1 Seat</div>
+                </div>
+                <div class="fare-amount" id="custFare">₹35</div>
+              </div>
+
+              <!-- Surge Notice Banner (Dynamic from Geo-Hex Zone) -->
+              <div id="fareSurgeBanner" class="hidden" style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:6px; padding:4px 8px; font-size:10.5px; color:#B45309; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                <span>⚡ <b id="fareSurgeZoneName">Connaught Place Surge</b></span>
+                <span style="font-weight:900; background:#F59E0B; color:#FFF; padding:1px 6px; border-radius:4px;" id="fareSurgeMultiplierBadge">1.5x</span>
+              </div>
+
+              <div class="fare-breakdown">
+                <div style="display:flex; justify-content:space-between;"><span>Base Fare:</span> <span id="fareBase">₹25</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Distance (3.2 km):</span> <span id="fareDist">₹10</span></div>
+                <div id="rowFareSurge" class="hidden" style="display:flex; justify-content:space-between; color:#D97706;"><span>Geo-Hex Surge:</span> <span id="fareSurgeAmount">+₹0</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Platform Access Fee:</span> <span id="farePlatformFee">₹3.00</span></div>
+                <div id="rowFareConv" class="hidden" style="display:flex; justify-content:space-between; color:#006FD4;"><span id="fareConvLabel">Convenience Fee:</span> <span id="fareConvFee">+₹0.00</span></div>
+                <div style="display:flex; justify-content:space-between; color:#64748B; font-size:10px;"><span>GST (5%):</span> <span id="fareGst">₹2.00</span></div>
+              </div>
+              <div class="safety-badge" id="fareSafetyBadge">🛡️ Sanitized Helmet Provided & Passenger Insured</div>
+            </div>
+
+            <!-- Payment Method Selection Bar -->
+            <div class="pay-selector-card" onclick="togglePaymentSheet(true)">
+              <div class="pay-selector-left">
+                <span class="pay-icon" id="custPayIcon">💵</span>
+                <div>
+                  <div class="pay-title" id="custPayTitle">Cash to Captain</div>
+                  <div class="pay-sub" id="custPaySub">Pay directly after arrival at destination • ₹0 fee</div>
+                </div>
+              </div>
+              <span class="pay-change-link">CHANGE ▾</span>
+            </div>
+
+            <!-- Payment Bottom Sheet Drawer -->
+            <div id="custPaymentDrawer" class="payment-drawer hidden">
+              <div class="drawer-header">
+                <span>Select Payment Method</span>
+                <button class="drawer-close-btn" onclick="togglePaymentSheet(false)">✕</button>
+              </div>
+              <div class="drawer-options">
+                <div class="pay-opt active" id="opt-CASH" onclick="selectCustomerPayment('CASH', '💵', 'Cash to Captain', 'Pay directly after arrival at destination')">
+                  <span class="opt-icon">💵</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>Cash to Captain</b>
+                      <span class="convenience-pill free" id="pill-CASH">₹0 Fee</span>
+                    </div>
+                    <small>Hand cash directly to driver at destination</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+
+                <div class="pay-opt" id="opt-UPI" onclick="selectCustomerPayment('UPI', '⚡', 'UPI Instant Pay', 'Google Pay, PhonePe, Paytm, BHIM')">
+                  <span class="opt-icon">⚡</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>UPI Instant</b>
+                      <span class="convenience-pill free" id="pill-UPI">₹0 Fee</span>
+                    </div>
+                    <small>Google Pay, PhonePe, Paytm QR / Intent</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+
+                <div class="pay-opt" id="opt-WALLET" onclick="selectCustomerPayment('WALLET', '💳', 'Holido Wallet', 'Current Balance: ₹350.00 • Instant debit')">
+                  <span class="opt-icon">💳</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>Holido Wallet</b>
+                      <span class="convenience-pill free" id="pill-WALLET">₹0 Fee</span>
+                    </div>
+                    <small>Balance: ₹350.00 (Instant digital deduction)</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+
+                <div class="pay-opt" id="opt-DEBIT_CARD" onclick="selectCustomerPayment('DEBIT_CARD', '💳', 'Debit Card', 'RuPay, Visa, MasterCard')">
+                  <span class="opt-icon">💳</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>Debit Card</b>
+                      <span class="convenience-pill fee" id="pill-DEBIT_CARD">+₹3 Fee</span>
+                    </div>
+                    <small>RuPay, Visa, MasterCard debit cards</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+
+                <div class="pay-opt" id="opt-CREDIT_CARD" onclick="selectCustomerPayment('CREDIT_CARD', '💳', 'Credit Card', 'Visa, Master, Amex')">
+                  <span class="opt-icon">💳</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>Credit Card</b>
+                      <span class="convenience-pill fee" id="pill-CREDIT_CARD">+₹8 Fee</span>
+                    </div>
+                    <small>Visa, MasterCard, Amex credit cards</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+
+                <div class="pay-opt" id="opt-NETBANKING" onclick="selectCustomerPayment('NETBANKING', '🏦', 'NetBanking', 'SBI, HDFC, ICICI & 50+ Banks')">
+                  <span class="opt-icon">🏦</span>
+                  <div class="opt-text">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                      <b>NetBanking</b>
+                      <span class="convenience-pill fee" id="pill-NETBANKING">+₹5 Fee</span>
+                    </div>
+                    <small>SBI, HDFC, ICICI & 50+ Indian banks</small>
+                  </div>
+                  <span class="opt-check">✔</span>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnBookRide" onclick="customerRequestRide()">
+              BOOK HOLIDO BIKE
+            </button>
+          </div>
+
+          <!-- Screen 2: Active Ride / Tracking View -->
+          <div id="custTrackingView" class="view-panel hidden">
+            <div class="status-banner" id="custStatusBanner">
+              <span class="spinner"></span>
+              <span id="custStatusText">Searching nearby Captains...</span>
+            </div>
+
+            <!-- IN-APP LIVE MINI MAP SHOWING NEARBY AVAILABLE RIDERS -->
+            <div class="cust-map-wrapper">
+              <canvas id="custMiniMapCanvas" width="288" height="175"></canvas>
+              <div class="cust-map-overlay">
+                <span class="radar-ping"></span>
+                <span id="custRadarStatus">Radar: 3 Captains active nearby</span>
+              </div>
+            </div>
+
+            <!-- Live Payment Method Badge -->
+            <div style="background:#FFF; border:1px solid #CBD5E1; padding:8px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span style="color:#64748B;">Payment Mode:</span>
+              <b style="color:#006FD4;" id="trackingPayMode">💵 Cash (₹35)</b>
+            </div>
+
+            <div class="otp-card" id="custOtpCard">
+              <div class="otp-label">START RIDE OTP</div>
+              <div class="otp-value" id="displayOtp">----</div>
+              <div class="otp-hint">Give this to Captain to start trip</div>
+            </div>
+
+            <div class="captain-card" id="custCaptainInfo">
+              <div class="cap-avatar">🏍️</div>
+              <div class="cap-details">
+                <div class="cap-name" id="custCapName">Rahul Sharma</div>
+                <div class="cap-vehicle" id="custCapVehicle">Hero Splendor • DL 01 AB 4592</div>
+                <div class="cap-rating">★ 4.88 (1,420 trips)</div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn-secondary" onclick="alert('Calling Captain +91 98765 43210...')">📞 Call Captain</button>
+              <button class="btn-danger" onclick="triggerSos()">⚠️ SOS Safety</button>
+            </div>
+          </div>
+
+          <!-- Screen 3: Post-Trip Anonymous Review View -->
+          <div id="custReviewModal" class="view-panel hidden" style="background:#FFF; color:#0F172A; text-align:center; padding:18px; position:relative;">
+            <!-- Upper Corner Cancel / Close Button -->
+            <button class="review-close-btn" onclick="skipCustomerReview()" title="Skip / Cancel Review">✕</button>
+
+            <div style="font-size:32px; margin-bottom:4px;">🎉</div>
+            <h3 style="font-size:16px; font-weight:800; color:#0F172A;">Rate Your Experience</h3>
+            <div style="font-size:12px; color:#64748B; margin-bottom:12px;" id="reviewCaptainName">Captain Rahul Sharma (Hero Splendor)</div>
+
+            <div style="display:flex; justify-content:center; gap:8px; font-size:28px; cursor:pointer; margin-bottom:12px;" id="starContainer">
+              <span onclick="setRating(1)" class="star active" style="color:#F59E0B">★</span>
+              <span onclick="setRating(2)" class="star active" style="color:#F59E0B">★</span>
+              <span onclick="setRating(3)" class="star active" style="color:#F59E0B">★</span>
+              <span onclick="setRating(4)" class="star active" style="color:#F59E0B">★</span>
+              <span onclick="setRating(5)" class="star active" style="color:#F59E0B">★</span>
+            </div>
+
+            <textarea id="reviewCommentInput" placeholder="Write feedback (e.g. Smooth riding, provided clean sanitized helmet...)" style="width:100%; height:64px; border:1px solid #CBD5E1; border-radius:8px; padding:8px; font-size:12px; resize:none; margin-bottom:12px; font-family:inherit;"></textarea>
+
+            <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:10px; font-size:11px; color:#1E40AF; margin-bottom:16px; text-align:left; line-height:1.4;">
+              🛡️ <b>Anonymous Privacy Shield:</b> Your real name, phone, and profile photo are <b>never disclosed</b> to the Captain. Public profile will strictly display: <b id="anonymousShieldBadge">"Verified Holido Rider 🛡️"</b>.
+            </div>
+
+            <button class="btn-primary" style="width:100%; padding:12px;" onclick="submitCustomerReview()">
+              Submit Anonymous Review
+            </button>
+
+            <!-- Bottom Skip Option -->
+            <button class="btn-skip-review" onclick="skipCustomerReview()">
+              Skip for Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: LIVE GPS MAP SIMULATOR -->
+    <div class="map-column">
+      <div class="map-header">
+        <div class="map-title">📍 Live Geospatial Dispatch Engine</div>
+        <div class="map-legend">
+          <span><span class="legend-dot green"></span> Pickup</span>
+          <span><span class="legend-dot red"></span> Drop</span>
+          <span><span class="legend-dot yellow"></span> Holido Bike</span>
+        </div>
+      </div>
+      <div class="map-canvas-container">
+        <canvas id="mapCanvas" width="520" height="580"></canvas>
+        <div class="trip-step-toast" id="mapToast">Captain Rahul is on the way to pickup!</div>
+      </div>
+      <div class="map-controls">
+        <button class="btn-demo" onclick="triggerAutoDemo()">⚡ One-Click Auto Demonstration</button>
+      </div>
+    </div>
+
+    <!-- RIGHT DEVICE: CAPTAIN APP -->
+    <div class="device-column">
+      <div class="device-label">Captain (Driver) Mobile App</div>
+      <div class="phone-frame captain-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen dark-theme" id="captainApp">
+          <!-- Captain Header -->
+          <div class="cap-app-header">
+            <div class="cap-brand-bar" style="display: flex; align-items: center; gap: 8px;">
+              <img src="assets/holido_logo.png" alt="Holido Logo" style="height: 32px; width: auto; max-width: 140px; object-fit: contain;">
+              <span class="cap-badge-tag">CAPTAIN</span>
+            </div>
+            <div class="online-switch">
+              <label class="switch">
+                <input type="checkbox" id="captainOnlineToggle" checked onchange="toggleCaptainOnline(this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Captain Dashboard View -->
+          <div id="capDashboardView" class="view-panel">
+            <!-- Rider Vehicle Registration & Selection Switcher -->
+            <div class="cap-vehicle-strip" style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:10px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:800; color:#042045;">🪪 REGISTERED VEHICLE</span>
+                <span class="badge-status verified" id="capVehicleStatusBadge" style="font-size:9.5px; padding:2px 6px; background:#ECFDF5; color:#059669; border-radius:4px; font-weight:bold;">ACTIVE RC ✔</span>
+              </div>
+              <div class="cap-vehicle-switch-grid">
+                <button class="cap-veh-btn active" id="capVehBtn-BIKE" onclick="setCaptainVehicle('BIKE')">
+                  <span>🏍️</span> Bike
+                </button>
+                <button class="cap-veh-btn" id="capVehBtn-AUTO" onclick="setCaptainVehicle('AUTO')">
+                  <span>🛺</span> Auto
+                </button>
+                <button class="cap-veh-btn" id="capVehBtn-CAR" onclick="setCaptainVehicle('CAR')">
+                  <span>🚗</span> Car / Cab
+                </button>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:8px; padding-top:6px; border-top:1px dashed #E2E8F0;">
+                <span id="capVehDisplayIcon" style="font-size:22px;">🏍️</span>
+                <div style="font-size:11px; flex:1;">
+                  <b id="capVehDisplayModel" style="color:#0F172A;">Hero Splendor Plus</b>
+                  <div id="capVehDisplayPlate" style="color:#64748B; font-family:monospace; font-size:10px;">DL 01 AB 4592 (Verified)</div>
+                </div>
+                <span style="font-size:10px; color:#006FD4; font-weight:bold;">1 Seat</span>
+              </div>
+            </div>
+
+            <div class="earnings-widget">
+              <div class="earn-title">TODAY'S EARNINGS</div>
+              <div class="earn-amount" id="capEarnings">₹840</div>
+              <div class="earn-sub">7 Trips Completed • 4.88 ★ Rating</div>
+            </div>
+
+            <!-- 24H DAILY PASS & SELFIE VERIFICATION STRIP -->
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:7px; font-size:11px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#475569">⏱️ 24h Daily Pass:</span>
+                <span id="capPassBadge" style="padding:2px 8px; font-size:10px; font-weight:bold; background:#ECFDF5; color:#059669; border-radius:12px; border:1px solid #10B981;">ACTIVE (₹29 Paid)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#475569">📸 1st-Ride Selfie:</span>
+                <span id="capSelfieBadge" style="padding:2px 8px; font-size:10px; font-weight:bold; background:#ECFDF5; color:#059669; border-radius:12px; border:1px solid #10B981;">VERIFIED ✔</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#475569">📅 Weekly Payout:</span>
+                <span style="color:#FF8100; font-weight:bold; font-size:10px;">Every Tuesday (Mon-Sun)</span>
+              </div>
+              <button onclick="promptRandomDaytimeSelfie()" style="background:#FFFFFF; border:1px solid #CBD5E1; color:#006FD4; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; margin-top:2px;">
+                🤳 Test Random Daytime Selfie Audit
+              </button>
+            </div>
+
+            <div class="incentive-card">
+              <div class="inc-title">Daily Incentive Target</div>
+              <div class="progress-bar"><div class="progress-fill" style="width: 70%"></div></div>
+              <div class="inc-sub">Complete 3 more rides to earn ₹150 Bonus</div>
+            </div>
+
+            <!-- Incoming Ride Request Overlay (Modal) -->
+            <div id="incomingOfferModal" class="incoming-modal hidden">
+              <div class="timer-ring">
+                <span id="countdownSecs">15</span>
+              </div>
+              <div class="offer-badge" id="offerBadge">BIKE TAXI REQUEST</div>
+              <div class="offer-fare" id="offerEarning">Earn ₹28</div>
+              <div style="font-size:11px; color:#FBBF24; font-weight:bold; margin-bottom:4px;" id="offerPayMode">💵 Payment: Cash to Captain</div>
+              <div class="offer-dist">0.6 km from pickup</div>
+              <div class="offer-routes">
+                <div class="route-p">🟢 <span id="offerPickup">India Gate</span></div>
+                <div class="route-d">🔴 <span id="offerDrop">Connaught Place</span></div>
+              </div>
+              <div class="offer-actions">
+                <button class="btn-reject" onclick="rejectOffer()">Pass</button>
+                <button class="btn-accept" onclick="acceptOffer()">ACCEPT RIDE</button>
+              </div>
+            </div>
+
+            <!-- Active Trip Control Panel (When accepted) -->
+            <div id="capTripControl" class="trip-control-card hidden">
+              <div class="trip-stage-title" id="capTripStage">Heading to Pickup</div>
+              <div class="cust-mini-info">
+                <span>Rider: Akshay Kumar</span>
+                <button class="mini-call" onclick="alert('Calling rider...')">📞 Call</button>
+              </div>
+
+              <!-- Payment Mode Info for Captain -->
+              <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:6px 10px; margin-bottom:8px; display:flex; justify-content:space-between; font-size:11px;">
+                <span style="color:#64748B">Payment Mode:</span>
+                <b style="color:#0F172A" id="capTripPayMode">💵 Cash (₹35)</b>
+              </div>
+
+              <!-- Button 1: Arrive -->
+              <button class="btn-action" id="btnCapArrive" onclick="captainArriveAtPickup()">
+                I HAVE ARRIVED AT PICKUP
+              </button>
+
+              <!-- OTP Keypad Section (Hidden until Arrived) -->
+              <div id="capOtpSection" class="otp-section hidden">
+                <div class="otp-title">Enter Customer 4-digit OTP:</div>
+                <div class="otp-inputs">
+                  <input type="text" maxlength="4" id="capInputOtp" placeholder="OTP">
+                </div>
+                <button class="btn-action btn-green" onclick="captainVerifyOtp()">VERIFY & START TRIP</button>
+              </div>
+
+              <!-- Button 3: Complete Trip (Hidden until in progress) -->
+              <button class="btn-action btn-complete hidden" id="btnCapComplete" onclick="captainCompleteTrip()">
+                COMPLETE TRIP & COLLECT CASH
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holido Admin - Central Command & Dispatch Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header" style="padding: 16px 18px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #E2E8F0;">
+        <img src="../assets/logo/holido_logo_white_text.png" alt="Holido Logo" style="height: 52px; width: auto; max-width: 210px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));">
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="javascript:void(0)" class="nav-item active" id="nav-overview" onclick="switchNavTab('overview')">
+          <span class="nav-icon">📊</span>
+          <span>Live Operations</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-trips" onclick="switchNavTab('trips')">
+          <span class="nav-icon">🚕</span>
+          <span>Active Trips</span>
+          <span class="badge" id="badgeActiveTrips">3</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-captains" onclick="switchNavTab('captains')">
+          <span class="nav-icon">🏍️</span>
+          <span>Captains & KYC</span>
+          <span class="badge green">4 Online</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-rider-payments" onclick="switchNavTab('rider-payments')">
+          <span class="nav-icon">💵</span>
+          <span>Rider-Wise Payments</span>
+          <span class="badge" style="background:#059669; font-weight:800;">TUESDAY PAY</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-pricing" onclick="switchNavTab('pricing')">
+          <span class="nav-icon">⚡</span>
+          <span>Surge & 24h Daily Pass</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-revenue" onclick="switchNavTab('revenue')">
+          <span class="nav-icon">💰</span>
+          <span>Revenue & Tuesday Payouts</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-payment" onclick="switchNavTab('payment')">
+          <span class="nav-icon">💳</span>
+          <span>Payment Gateways</span>
+          <span class="badge" style="background:#FF8100">UPI / PG</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-team" onclick="switchNavTab('team')">
+          <span class="nav-icon">👥</span>
+          <span>Team & Permissions</span>
+          <span class="badge" style="background:#059669">RBAC</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-logs" onclick="switchNavTab('logs')">
+          <span class="nav-icon">📜</span>
+          <span>Central Audit Logs</span>
+          <span class="badge" style="background:#6366F1">ALL LOGS</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-reviews" onclick="switchNavTab('reviews')">
+          <span class="nav-icon">⭐</span>
+          <span>Anonymous Reviews</span>
+          <span class="badge" style="background:#D97706">MASKED</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="switchNavTab('profile')">
+          <span class="nav-icon">👑</span>
+          <span>Super Admin Profile</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sim-link-box">
+          <div class="sim-title">Dual-App Simulator</div>
+          <button class="btn-open-sim" onclick="window.open('/', '_blank')">
+            📱 Open Mobile Apps
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by Ride ID, Captain Name, Customer Phone...">
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Surge Mode Pill -->
+          <div class="surge-control-pill">
+            <span class="pill-label">Surge Pricing:</span>
+            <select id="surgeSelector" onchange="onSurgeChange(this.value)">
+              <option value="1.0">Normal (1.0x)</option>
+              <option value="1.25">Moderate Demand (1.25x)</option>
+              <option value="1.5">Rain / Peak Surge (1.5x)</option>
+              <option value="2.0">Critical Demand (2.0x)</option>
+            </select>
+          </div>
+
+          <div class="server-status">
+            <span class="status-pulse"></span>
+            <span>Dispatch Engine: <b>LIVE</b></span>
+          </div>
+
+          <div class="admin-profile" onclick="openAdminSecurityModal()" title="Click to Change Super Admin ID & Password" style="cursor:pointer">
+            <div class="profile-avatar" id="topAdminAvatar">A</div>
+            <div class="profile-info">
+              <span class="profile-name" id="topAdminName">Akshay Kumar</span>
+              <span class="profile-role" style="display:flex; align-items:center; gap:4px;">
+                <span>Super Admin</span> <span style="font-size:10px; color:#FBBF24">🔑 Change Pwd</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- KPI METRIC CARDS -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">TOTAL REVENUE TODAY</span>
+            <span class="kpi-icon blue">💰</span>
+          </div>
+          <div class="kpi-value" id="kpiRevenue">₹14,820</div>
+          <div class="kpi-sub positive">↑ 18.4% vs yesterday • 20% platform cut: <b id="kpiCut">₹2,964</b></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">ACTIVE TRIPS LIVE</span>
+            <span class="kpi-icon cyan">🚕</span>
+          </div>
+          <div class="kpi-value" id="kpiActive">3</div>
+          <div class="kpi-sub">2 Bike Taxis • 1 Parcel Courier in transit</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">ONLINE CAPTAINS</span>
+            <span class="kpi-icon green">🏍️</span>
+          </div>
+          <div class="kpi-value" id="kpiCaptains">4 / 5</div>
+          <div class="kpi-sub positive">80% fleet utilization in Delhi NCR</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">AVG. PICKUP ETA</span>
+            <span class="kpi-icon yellow">⚡</span>
+          </div>
+          <div class="kpi-value">2.4 min</div>
+          <div class="kpi-sub positive">Top efficiency • 98.2% OTP start rate</div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 1: LIVE OPERATIONS (OVERVIEW) ================= -->
+      <div id="view-overview" class="view-section">
+        <section class="ops-grid">
+          <div class="panel map-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <span>📍 Live Geospatial Fleet & Dispatch Radar</span>
+                <span class="live-tag">LIVE GPS</span>
+              </div>
+              <div class="radar-legend">
+                <span class="dot green"></span> Pickup
+                <span class="dot red"></span> Drop
+                <span class="dot blue"></span> Active Bike
+                <span class="dot cyan"></span> Idle Captain
+              </div>
+            </div>
+            <div class="admin-canvas-wrapper">
+              <canvas id="adminRadarCanvas" width="700" height="380"></canvas>
+              <div class="radar-status-bar" id="radarStatus">Monitoring 4 Captains across Central Delhi & Noida</div>
+            </div>
+          </div>
+
+          <div class="panel config-panel">
+            <div class="panel-header">
+              <div class="panel-title">⚡ Instant Fare & Commission Rules</div>
+            </div>
+            <div class="config-body">
+              <div class="config-row">
+                <div class="config-label">
+                  <span>Bike Base Fare (First 1.5 km)</span>
+                  <span class="config-val" id="valBaseFare">₹25</span>
+                </div>
+                <input type="range" min="15" max="50" value="25" class="slider" oninput="updateBaseFare(this.value)">
+              </div>
+
+              <div class="config-row">
+                <div class="config-label">
+                  <span>Per KM Rate</span>
+                  <span class="config-val" id="valKmRate">₹10/km</span>
+                </div>
+                <input type="range" min="7" max="20" value="10" class="slider" oninput="updateKmRate(this.value)">
+              </div>
+
+              <div class="config-row">
+                <div class="config-label">
+                  <span>Platform Commission Rate</span>
+                  <span class="config-val" id="valCommission">20%</span>
+                </div>
+                <input type="range" min="10" max="30" value="20" class="slider" oninput="updateCommission(this.value)">
+              </div>
+
+              <button class="btn-save-config" onclick="saveRules()">✓ Apply Rules Instantly to All Apps</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SUB TABLES SECTION -->
+        <section class="tables-section">
+          <div class="tab-controls">
+            <button class="tab-btn active" id="tabLiveTrips" onclick="showSubTable('trips')">🚕 Live Trips Monitor (3)</button>
+            <button class="tab-btn" id="tabCaptains" onclick="showSubTable('captains')">🏍️ Captain Fleet & KYC Verification (4)</button>
+          </div>
+
+          <div class="panel" id="sectionTrips">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>RIDE ID</th>
+                    <th>SERVICE</th>
+                    <th>CUSTOMER</th>
+                    <th>PICKUP → DROP</th>
+                    <th>FARE</th>
+                    <th>CAPTAIN ASSIGNED</th>
+                    <th>OTP STATUS</th>
+                    <th>TRIP STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="tripsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel hidden" id="sectionCaptains">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CAPTAIN ID</th>
+                    <th>NAME & CONTACT</th>
+                    <th>VEHICLE DETAILS</th>
+                    <th>RATING</th>
+                    <th>TODAY EARNINGS</th>
+                    <th>KYC STATUS</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="captainsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 2: ACTIVE TRIPS ================= -->
+      <div id="view-trips" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 10px;">
+          <div class="panel-header" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px 14px 0 0;">
+            <div class="panel-title">
+              <span>🚕 Live Active Rides Dispatcher & Telemetry</span>
+            </div>
+            <div style="font-size:12px; color:#93C5FD">3 Active Trips in Real-Time Broadcast</div>
+          </div>
+          <div class="panel" style="border-radius:0 0 14px 14px; border-top:none;">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>RIDE ID</th>
+                    <th>SERVICE</th>
+                    <th>CUSTOMER</th>
+                    <th>PICKUP → DROP</th>
+                    <th>FARE</th>
+                    <th>CAPTAIN ASSIGNED</th>
+                    <th>OTP STATUS</th>
+                    <th>TRIP STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="fullTripsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 3: CAPTAINS & KYC ================= -->
+      <div id="view-captains" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 10px;">
+          <div class="panel-header" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px 14px 0 0;">
+            <div class="panel-title">
+              <span>🏍️ Holido Captain Fleet, Driving Licenses & Vehicle RC Audit</span>
+            </div>
+            <div style="font-size:12px; color:#34D399">4 Captains Online • 1 Pending KYC</div>
+          </div>
+          <div class="panel" style="border-radius:0 0 14px 14px; border-top:none;">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CAPTAIN ID</th>
+                    <th>NAME & CONTACT</th>
+                    <th>VEHICLE DETAILS</th>
+                    <th>RATING</th>
+                    <th>TODAY EARNINGS</th>
+                    <th>KYC STATUS</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="fullCaptainsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= DEDICATED VIEW: RIDER-WISE PAYMENTS & TUESDAY SETTLEMENT ================= -->
+      <div id="view-rider-payments" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 6px;">
+          <!-- TOP HEADER BANNER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h2 style="font-size:20px; font-weight:800; color:#0F172A; margin:0;">💵 Rider-Wise Payments & Tuesday Settlement Ledger</h2>
+                <span class="badge-status verified" style="font-size:11px;">CYCLE: LAST MON - SUN</span>
+              </div>
+              <p style="font-size:12.5px; color:#64748B; margin-top:3px;">
+                Direct payout accounts for each individual Captain covering <b>Last Week Monday 00:00 AM to Sunday 11:59 PM</b>. Disburse via UPI, review platform deductions, and print payment slips.
+              </p>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+              <button class="btn-save-config" onclick="processTuesdayWeeklySettlement()" style="margin:0; padding:10px 18px; font-size:13px; background:#059669;">
+                ⚡ Disburse All Scheduled Payouts (Batch)
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI STAT CARDS FOR RIDER PAYOUTS -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:20px;">
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">LAST WEEK GROSS GMV</span>
+              <div class="kpi-value" style="color:#006FD4; font-size:22px; font-weight:900; margin-top:4px;">₹25,230.00</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">142 Completed Rides</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">HOLIDO 20% NET CUT</span>
+              <div class="kpi-value" style="color:#D97706; font-size:22px; font-weight:900; margin-top:4px;">₹5,046.00</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">Platform Commission</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1.5px solid #10B981; padding:16px;">
+              <span class="kpi-title" style="color:#059669; font-size:10.5px; font-weight:bold;">NET PAYABLE TO RIDERS (80%)</span>
+              <div class="kpi-value" style="color:#059669; font-size:22px; font-weight:900; margin-top:4px;">₹18,790.00</div>
+              <div style="font-size:11px; color:#059669; font-weight:bold; margin-top:2px;">Ready for Tuesday UPI Transfer</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">PAYOUT SCHEDULE</span>
+              <div class="kpi-value" style="color:#FF8100; font-size:20px; font-weight:900; margin-top:4px;">Every Tuesday</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">Last Mon 00:00 to Sun 23:59</div>
+            </div>
+          </div>
+
+          <!-- RIDER LEDGER PANEL -->
+          <div class="panel" style="padding: 22px; border:1px solid #E2E8F0;">
+            <!-- SEARCH AND FILTER CONTROLS -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="text" id="dedicatedSearchRiderPayment" onkeyup="filterRiderPayments(this.value)" placeholder="🔍 Search by Captain ID, Name, Phone, UPI ID..." style="background:#F8FAFC; border:1.5px solid #CBD5E1; padding:9px 14px; border-radius:8px; font-size:12.5px; width:280px;">
+                <span class="badge-status verified" id="dedicatedRiderCountBadge" style="font-size:11.5px;">4 RIDERS ENROLLED</span>
+              </div>
+
+              <!-- VEHICLE TYPE FILTER PILLS -->
+              <div style="display:flex; gap:6px;">
+                <button class="pricing-tab-btn active" id="rf-ALL" onclick="filterRiderVehicle('ALL')" style="padding:6px 12px; font-size:11.5px;">All Vehicles (4)</button>
+                <button class="pricing-tab-btn" id="rf-BIKE" onclick="filterRiderVehicle('BIKE')" style="padding:6px 12px; font-size:11.5px;">🏍️ Bike Taxi (2)</button>
+                <button class="pricing-tab-btn" id="rf-AUTO" onclick="filterRiderVehicle('AUTO')" style="padding:6px 12px; font-size:11.5px;">🛺 Auto (1)</button>
+                <button class="pricing-tab-btn" id="rf-CAR" onclick="filterRiderVehicle('CAR')" style="padding:6px 12px; font-size:11.5px;">🚗 Cab / Car (1)</button>
+              </div>
+            </div>
+
+            <!-- LEDGER DATA TABLE -->
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CAPTAIN / RIDER</th>
+                    <th>PAYOUT DESTINATION (UPI / BANK)</th>
+                    <th>WEEKLY TRIPS & GMV</th>
+                    <th>PLATFORM COMMISSION (20%)</th>
+                    <th>DAILY PASS & CASH OFFSET</th>
+                    <th>NET PAYABLE (80% POOL)</th>
+                    <th>SETTLEMENT STATUS</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="dedicatedRiderPaymentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 4: SURGE & 24H DAILY PASS ================= -->
+      <div id="view-pricing" class="view-section hidden">
+        <!-- CLEAN PRICING & ZONES SUB-NAVIGATION TABS -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid #E2E8F0; padding-bottom:14px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:#0F172A; margin:0;">Dynamic Pricing, Demand Surge & Platform Fees</h2>
+            <p style="font-size:12px; color:#64748B; margin-top:2px;">Manage Geo-Hex zones, vehicle base fares, daily subscription passes, and payment gateway convenience fees.</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="pricing-tab-btn active" id="ptab-surge" onclick="switchPricingSubTab('surge')">
+              ⚡ Geo-Hex Demand Zones (CRUD)
+            </button>
+            <button class="pricing-tab-btn" id="ptab-vehicles" onclick="switchPricingSubTab('vehicles')">
+              🚗 Vehicle Fares & Platform Fee
+            </button>
+            <button class="pricing-tab-btn" id="ptab-dailypass" onclick="switchPricingSubTab('dailypass')">
+              ⏱️ 24h Daily Pass & Selfie Rules
+            </button>
+            <button class="pricing-tab-btn" id="ptab-convenience" onclick="switchPricingSubTab('convenience')">
+              💳 Payment Convenience Fees
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 1: GEO-HEX DEMAND ZONES (FULL CRUD) ================= -->
+        <div id="subview-surge" class="pricing-subpanel">
+          <div class="panel" style="padding: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h3 style="color:#006FD4; font-size:16px; margin:0;">⚡ Geo-Hex Demand Zones Manager</h3>
+                  <span class="badge-status verified" id="zoneCountBadge" style="font-size:11px;">5 ZONES ACTIVE</span>
+                </div>
+                <p style="color:#64748B; font-size:12px; margin-top:4px;">
+                  Create custom surge demand zones across Delhi NCR, edit multipliers and landmarks, or delete expired zones.
+                </p>
+              </div>
+
+              <!-- ACTION BUTTONS: CREATE NEW, RESET, BROADCAST -->
+              <div style="display:flex; gap:10px;">
+                <button class="btn-save-config" onclick="openCreateZoneModal()" style="margin:0; padding:9px 16px; font-size:12.5px; background:#006FD4;">
+                  ➕ Create New Zone
+                </button>
+                <button class="btn-table-action" onclick="resetSurgeZonesDefault()" style="background:#F8FAFC; padding:9px 14px; font-size:12px;">
+                  ↺ Reset to 1.0x
+                </button>
+                <button class="btn-save-config" onclick="saveGeoHexZones()" style="margin:0; padding:9px 16px; font-size:12.5px; background:linear-gradient(135deg, #FF8100, #EA580C);">
+                  💾 Broadcast to Apps
+                </button>
+              </div>
+            </div>
+
+            <!-- GEO-HEX ZONES TABLE WITH CREATE / EDIT / DELETE -->
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ZONE ID</th>
+                    <th>ZONE & LANDMARK REGION</th>
+                    <th>DEMAND TIER</th>
+                    <th>SURGE MULTIPLIER</th>
+                    <th>STATUS</th>
+                    <th>PRESETS</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="geoHexZonesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 2: VEHICLE PRICING & PLATFORM FEE ================= -->
+        <div id="subview-vehicles" class="pricing-subpanel hidden">
+          <!-- PLATFORM ACCESS FEE -->
+          <div class="panel" style="padding: 22px; border: 1.5px solid #006FD4; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <h3 style="color:#006FD4; font-size:16px; margin:0;">🛡️ User Portal Platform Access Fee</h3>
+                <p style="color:#64748B; font-size:12px; margin-top:3px;">
+                  Fixed fee applied to each customer ride booking to fund cloud dispatch, rider insurance, and 24x7 SOS emergency support.
+                </p>
+              </div>
+              <span class="badge-status verified" id="adminPlatformBadge" style="font-size:12px;">CURRENT: ₹3.00</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+              <div>
+                <div class="config-label" style="margin-bottom:8px;">
+                  <span>Platform Access Fee Per Booking:</span>
+                  <b class="config-val" id="adminPlatformFeeDisplay" style="font-size:18px; color:#006FD4;">₹3.00</b>
+                </div>
+                <input type="range" min="0" max="20" step="0.5" value="3.0" class="slider" id="adminPlatformSlider" oninput="onPlatformFeeSlider(this.value)">
+                <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#94A3B8; margin-top:4px;">
+                  <span>₹0.00 (Zero Fee)</span>
+                  <span>₹10.00</span>
+                  <span>₹20.00 (Max)</span>
+                </div>
+              </div>
+
+              <div>
+                <button class="btn-save-config" onclick="savePlatformAccessFee()" style="width:100%; margin:0; padding:12px; font-size:13px;">
+                  💾 Apply Platform Access Fee
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VEHICLE FARES GRID (BIKE, AUTO, CAR, PARCEL) -->
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px;">
+            <div class="panel" style="padding: 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:#006FD4; font-size:15px; margin:0;">🏍️ Holido Bike Taxi Pricing</h3>
+                <span class="badge-status verified" style="font-size:10px;">1 PASSENGER</span>
+              </div>
+              <div class="config-body" style="padding:0; gap:10px;">
+                <div class="config-row">
+                  <div class="config-label"><span>Base Fare (First 1.5 km):</span> <b class="config-val" id="viewBaseFare">₹25</b></div>
+                  <input type="range" min="15" max="50" value="25" class="slider" oninput="updateVehicleBase('BIKE', this.value); document.getElementById('viewBaseFare').innerText='₹'+this.value">
+                </div>
+                <div class="config-row">
+                  <div class="config-label"><span>Per KM Rate:</span> <b class="config-val" id="viewKmRate">₹10/km</b></div>
+                  <input type="range" min="7" max="25" value="10" class="slider" oninput="updateVehicleKm('BIKE', this.value); document.getElementById('viewKmRate').innerText='₹'+this.value+'/km'">
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="padding: 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:#FF8100; font-size:15px; margin:0;">🛺 Holido Auto Rickshaw Pricing</h3>
+                <span class="badge-status assigned" style="font-size:10px;">3 PASSENGERS</span>
+              </div>
+              <div class="config-body" style="padding:0; gap:10px;">
+                <div class="config-row">
+                  <div class="config-label"><span>Base Fare (First 1.5 km):</span> <b class="config-val" id="viewAutoBase">₹35</b></div>
+                  <input type="range" min="25" max="60" value="35" class="slider" oninput="updateVehicleBase('AUTO', this.value); document.getElementById('viewAutoBase').innerText='₹'+this.value">
+                </div>
+                <div class="config-row">
+                  <div class="config-label"><span>Per KM Rate:</span> <b class="config-val" id="viewAutoKm">₹14/km</b></div>
+                  <input type="range" min="10" max="30" value="14" class="slider" oninput="updateVehicleKm('AUTO', this.value); document.getElementById('viewAutoKm').innerText='₹'+this.value+'/km'">
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="padding: 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:#059669; font-size:15px; margin:0;">🚗 Holido Cab / Car (AC) Pricing</h3>
+                <span class="badge-status verified" style="font-size:10px;">4 PASSENGERS</span>
+              </div>
+              <div class="config-body" style="padding:0; gap:10px;">
+                <div class="config-row">
+                  <div class="config-label"><span>Base Fare (First 1.5 km):</span> <b class="config-val" id="viewCarBase">₹60</b></div>
+                  <input type="range" min="40" max="120" value="60" class="slider" oninput="updateVehicleBase('CAR', this.value); document.getElementById('viewCarBase').innerText='₹'+this.value">
+                </div>
+                <div class="config-row">
+                  <div class="config-label"><span>Per KM Rate:</span> <b class="config-val" id="viewCarKm">₹18/km</b></div>
+                  <input type="range" min="12" max="40" value="18" class="slider" oninput="updateVehicleKm('CAR', this.value); document.getElementById('viewCarKm').innerText='₹'+this.value+'/km'">
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="padding: 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:#7C3AED; font-size:15px; margin:0;">📦 Parcel Courier Delivery Pricing</h3>
+                <span class="badge-status verified" style="font-size:10px;">UP TO 5 KG</span>
+              </div>
+              <div class="config-body" style="padding:0; gap:10px;">
+                <div class="config-row">
+                  <div class="config-label"><span>Light Parcel Base (&lt;= 2 kg):</span> <b class="config-val">₹35.00</b></div>
+                </div>
+                <div class="config-row">
+                  <div class="config-label"><span>Medium Parcel Base (2 kg - 5 kg):</span> <b class="config-val">₹50.00</b></div>
+                </div>
+                <div class="config-row">
+                  <div class="config-label"><span>Parcel Per KM Rate:</span> <b class="config-val">₹12.00/km</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 3: 24H DAILY PASS & BIOMETRICS ================= -->
+        <div id="subview-dailypass" class="pricing-subpanel hidden">
+          <div class="panel" style="padding: 24px; border: 1.5px solid #3B82F6;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <h3 style="color:#006FD4; font-size:16px; margin:0;">⏱️ 24-Hour Fixed Daily Pass (12 AM to 12 AM) & Mandatory Selfie Policy</h3>
+                <p style="color:#64748B; font-size:12px; margin-top:2px;">Riders (Captains) must pay this fixed daily fee & pass selfie verification before starting their 1st ride or parcel delivery of the day.</p>
+              </div>
+              <span class="badge-status verified" style="font-size:12px;">ACTIVE 24H CYCLE</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+                <div class="config-label">
+                  <span>Daily Fixed Access Fee (Valid 12:00 AM to 11:59 PM):</span>
+                  <b class="config-val" id="valDailyPassFee" style="font-size:16px; color:#006FD4">₹29.00 / Day</b>
+                </div>
+                <input type="range" min="10" max="100" value="29" step="1" class="slider" oninput="updateDailyFee(this.value)">
+                <small style="color:#64748B; display:block; margin-top:8px;">
+                  • Deducted from Captain digital wallet before 1st trip of day.<br>
+                  • Valid from 12:00 AM (midnight) to 11:59 PM (next midnight).<br>
+                  • Applies equally to <b>Bike Taxi</b>, <b>Auto</b>, and <b>Cab</b> captains.
+                </small>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+                <h4 style="font-size:13px; color:#059669; margin-bottom:8px;">📸 Biometric & Random Daytime Selfie Verification Rules</h4>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                  <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" checked disabled style="accent-color:#00E676;">
+                    <span><b>Mandatory 1st Ride Selfie:</b> Must verify face & helmet before taking 1st ride</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" checked style="accent-color:#FF8100;">
+                    <span><b>Random Daytime Prompts:</b> Prompts selfie audit at random hours to prevent account sharing</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" checked style="accent-color:#D97706;">
+                    <span><b>AI Helmet Detection:</b> Auto-detect sanitized helmet before approving online status</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 4: PAYMENT CONVENIENCE FEES ================= -->
+        <div id="subview-convenience" class="pricing-subpanel hidden">
+          <div class="panel" style="padding: 24px; border: 1.5px solid #059669;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <h3 style="color:#059669; font-size:16px; margin:0;">💳 Payment Method Convenience Fees (Customize Per Payment Type)</h3>
+                <p style="color:#64748B; font-size:12px; margin-top:3px;">
+                  Customize convenience fees charged to customers depending on payment method (e.g. Credit Card MDR offset vs Free UPI/Cash). Dynamic fees reflect on the user portal checkout.
+                </p>
+              </div>
+              <span class="badge-status verified" style="font-size:11px;">MDR & CONVENIENCE RULES</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:18px;">
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>💵 Cash to Captain</b>
+                  <span class="badge-status completed" style="font-size:10px;">FREE</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">Zero processing cost. Direct hand-to-hand settlement.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_CASH" value="0.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>⚡ UPI Instant Pay</b>
+                  <span class="badge-status completed" style="font-size:10px;">RECOMMENDED</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">Google Pay, PhonePe, Paytm, BHIM QR. Zero MDR.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_UPI" value="0.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>💳 Holido Digital Wallet</b>
+                  <span class="badge-status completed" style="font-size:10px;">INSTANT</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">In-app stored balance. Closed loop zero interchange.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_WALLET" value="0.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>💳 Debit Card (RuPay/Visa)</b>
+                  <span class="badge-status in-progress" style="font-size:10px;">STANDARD</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">Interchange cost pass-through for Visa & MasterCard.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_DEBIT_CARD" value="3.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>💳 Credit Card (Visa/Master/Amex)</b>
+                  <span class="badge-status assigned" style="font-size:10px;">MDR OFFSET</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">1.8% - 2.2% payment gateway interchange surcharge.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_CREDIT_CARD" value="8.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <b>🏦 NetBanking (50+ Banks)</b>
+                  <span class="badge-status in-progress" style="font-size:10px;">INTERBANK</span>
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-bottom:8px;">Fixed bank routing and clearing charge.</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:bold;">Fee (₹):</span>
+                  <input type="number" id="adminFee_NETBANKING" value="5.00" step="0.5" min="0" max="50" style="background:#FFF; border:1px solid #CBD5E1; padding:6px 10px; border-radius:6px; font-weight:bold; width:90px;">
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-save-config" onclick="savePaymentConvenienceFees()" style="width:100%; padding:12px; font-size:14px; background:#059669;">
+              💾 Save Payment Method Convenience Fees & Broadcast to User Portal
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= VIEW 5: REVENUE & TUESDAY PAYOUTS ================= -->
+      <div id="view-revenue" class="view-section hidden">
+        <section class="revenue-analytics-grid">
+          <div class="kpi-card" style="background:#0F2344">
+            <span class="kpi-title">TODAY'S GROSS BOOKING VALUE (GMV)</span>
+            <div class="kpi-value">₹14,820.00</div>
+            <div class="kpi-sub">Total rider bookings settled today</div>
+          </div>
+
+          <div class="kpi-card" style="background:#0B2E24">
+            <span class="kpi-title">HOLIDO 20% NET REVENUE</span>
+            <div class="kpi-value" style="color:#34D399">₹2,964.00</div>
+            <div class="kpi-sub positive">Platform commission collected</div>
+          </div>
+
+          <div class="kpi-card" style="background:#1B2038">
+            <span class="kpi-title">CAPTAIN PAYOUTS POOL (80%)</span>
+            <div class="kpi-value" style="color:#60A5FA">₹11,856.00</div>
+            <div class="kpi-sub">Ready for instant UPI / IMPS payout</div>
+          </div>
+
+          <!-- TUESDAY WEEKLY SETTLEMENT CARD -->
+          <div class="panel" style="grid-column: 1 / -1; padding: 24px; border:1.5px solid #059669;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <h3 style="color:#34D399; font-size:16px;">📅 Weekly Payout Settlement Schedule: Every Tuesday</h3>
+                <p style="color:#94A3B8; font-size:12px; margin-top:2px;">Automated weekly payouts to Captain bank/UPI accounts covering <b>Last Week's Monday 00:00 AM to Sunday 11:59 PM</b>.</p>
+              </div>
+              <span class="badge-status verified" style="font-size:12px;">CYCLE: LAST MON - SUN</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:16px;">
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+                <span style="font-size:11px; color:#94A3B8; font-weight:bold">LAST WEEK COMPLETED TRIPS</span>
+                <div style="font-size:24px; font-weight:900; color:#0F172A; margin-top:4px;">486 Rides</div>
+                <small style="color:#64748B">Bike Taxi + Parcel Couriers</small>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+                <span style="font-size:11px; color:#94A3B8; font-weight:bold">GROSS WEEKLY BILLING (GMV)</span>
+                <div style="font-size:24px; font-weight:900; color:#38BDF8; margin-top:4px;">₹98,450.00</div>
+                <small style="color:#64748B">Platform 20% Net: <b>₹19,690.00</b></small>
+              </div>
+
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px;">
+                <span style="font-size:11px; color:#94A3B8; font-weight:bold">SCHEDULED TUESDAY PAYOUT (80%)</span>
+                <div style="font-size:24px; font-weight:900; color:#34D399; margin-top:4px;">₹78,760.00</div>
+                <small style="color:#34D399">Ready for instant UPI transfer to 42 captains</small>
+              </div>
+            </div>
+
+            <button class="btn-save-config" onclick="processTuesdayWeeklySettlement()" style="width:100%; padding:12px; font-size:14px; background:#059669;">⚡ Run Tuesday Weekly Payouts Batch Now</button>
+          </div>
+
+          <!-- RIDER-WISE PAYMENT & SETTLEMENT LEDGER (EVERY TUESDAY) -->
+          <div class="panel" style="grid-column: 1 / -1; padding: 24px; border: 1.5px solid #006FD4; margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h3 style="color:#006FD4; font-size:16px; margin:0;">🏍️ Rider-Wise Payment & Tuesday Settlement Ledger</h3>
+                  <span class="badge-status verified" id="riderPaymentCountBadge" style="font-size:11px;">4 ACTIVE CAPTAINS</span>
+                </div>
+                <p style="color:#64748B; font-size:12px; margin-top:3px;">
+                  Individual Captain payout accounts covering <b>Last Week Monday 00:00 AM to Sunday 11:59 PM</b>. Review gross GMV, 20% platform cut, daily pass deductions, and direct bank/UPI disbursements.
+                </p>
+              </div>
+
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="text" id="searchRiderPaymentInput" onkeyup="filterRiderPayments(this.value)" placeholder="Search Captain, UPI, or A/C..." style="background:#F8FAFC; border:1px solid #CBD5E1; padding:7px 12px; border-radius:8px; font-size:12px; width:220px;">
+                <button class="btn-save-config" onclick="processTuesdayWeeklySettlement()" style="margin:0; padding:9px 16px; font-size:12.5px; background:#059669;">
+                  ⚡ Disburse All Scheduled Payouts
+                </button>
+              </div>
+            </div>
+
+            <!-- LEDGER TABLE -->
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CAPTAIN / RIDER</th>
+                    <th>PAYOUT DESTINATION (UPI / BANK)</th>
+                    <th>WEEKLY TRIPS & GMV</th>
+                    <th>PLATFORM COMMISSION (20%)</th>
+                    <th>DAILY PASS & CASH OFFSET</th>
+                    <th>NET PAYABLE (80%)</th>
+                    <th>SETTLEMENT STATUS</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="riderPaymentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- PAYMENT BREAKDOWN -->
+          <div class="panel" style="grid-column: 1 / -1; padding: 24px;">
+            <h3 style="margin-bottom:16px;">💳 Payment Mode Settlement Breakdown</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
+                  <span>UPI Payments (Google Pay, PhonePe, Paytm): <b>58% (₹8,595)</b></span>
+                  <span style="color:#34D399">Instant Digital Settlement</span>
+                </div>
+                <div style="height:10px; background:#F1F5F9; border-radius:5px; overflow:hidden">
+                  <div style="width:58%; height:100%; background:linear-gradient(90deg, #006FD4, #FF8100)"></div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
+                  <span>Direct Cash to Captain: <b>42% (₹6,225)</b></span>
+                  <span style="color:#FBBF24">Commission auto-deducted from wallet</span>
+                </div>
+                <div style="height:10px; background:#F1F5F9; border-radius:5px; overflow:hidden">
+                  <div style="width:42%; height:100%; background:#059669"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 6: PAYMENT GATEWAY CONFIGURATION ================= -->
+      <div id="view-payment" class="view-section hidden">
+        <section class="pricing-detail-grid">
+          <div class="panel" style="grid-column: 1 / -1; padding: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="color:#60A5FA; margin-bottom:4px;">💳 Primary Collection Gateway</h3>
+                <p style="color:#94A3B8; font-size:12px;">Select the payment aggregator used to collect payments from Riders via UPI, Cards & Wallets.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:12px; font-weight:bold; color:#93C5FD">Gateway Environment:</span>
+                <select id="pgEnvMode" style="background:#F1F5F9; color:#38BDF8; border:1px solid #E2E8F0; padding:6px 12px; border-radius:8px; font-weight:bold;">
+                  <option value="TEST">TEST / SANDBOX MODE</option>
+                  <option value="LIVE">LIVE PRODUCTION MODE</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:20px;">
+              <div class="pg-provider-card active" id="cardRazorpay" onclick="selectPgProvider('RAZORPAY')">
+                <div style="font-size:24px; margin-bottom:6px;">⚡</div>
+                <div style="font-weight:900; font-size:15px; color:#FFF">Razorpay</div>
+                <div style="font-size:11px; color:#93C5FD">UPI Intent, Cards, Netbanking</div>
+                <span class="badge-status verified" style="margin-top:8px;">ACTIVE PRIMARY</span>
+              </div>
+
+              <div class="pg-provider-card" id="cardCashfree" onclick="selectPgProvider('CASHFREE')">
+                <div style="font-size:24px; margin-bottom:6px;">💸</div>
+                <div style="font-weight:900; font-size:15px; color:#FFF">Cashfree Payments</div>
+                <div style="font-size:11px; color:#94A3B8">Instant Captain Payouts & Collections</div>
+                <span class="badge-status assigned" style="margin-top:8px;">READY</span>
+              </div>
+
+              <div class="pg-provider-card" id="cardPhonepe" onclick="selectPgProvider('PHONEPE')">
+                <div style="font-size:24px; margin-bottom:6px;">📱</div>
+                <div style="font-weight:900; font-size:15px; color:#FFF">PhonePe PG</div>
+                <div style="font-size:11px; color:#94A3B8">Direct UPI AutoPay & Switch</div>
+                <span class="badge-status assigned" style="margin-top:8px;">BACKUP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="padding: 24px;">
+            <h3 style="color:#38BDF8; margin-bottom:16px;">🔑 Razorpay API Credentials</h3>
+            <div class="config-body" style="padding:0">
+              <div class="config-row">
+                <label style="font-size:11px; color:#94A3B8; font-weight:bold">RAZORPAY KEY ID</label>
+                <input type="text" id="rzpKeyId" value="rzp_test_4A92K810Lholido" style="background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-family:monospace; font-size:13px;">
+              </div>
+              <div class="config-row">
+                <label style="font-size:11px; color:#94A3B8; font-weight:bold">RAZORPAY KEY SECRET</label>
+                <input type="password" id="rzpKeySecret" value="HolidoSec_9842109xKlm" style="background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-family:monospace; font-size:13px;">
+              </div>
+              <div class="config-row">
+                <label style="font-size:11px; color:#94A3B8; font-weight:bold">WEBHOOK SECRET KEY</label>
+                <input type="text" id="rzpWebhookSecret" value="whsec_holido_dispatch_2026" style="background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-family:monospace; font-size:13px;">
+              </div>
+              <div class="config-row">
+                <label style="font-size:11px; color:#94A3B8; font-weight:bold">WEBHOOK ENDPOINT URL</label>
+                <input type="text" readonly value="https://api.holido.in/api/payments/webhook" style="background:#F1F5F9; border:1px dashed #3B82F6; color:#93C5FD; padding:10px; border-radius:8px; font-family:monospace; font-size:12px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="padding: 24px;">
+            <h3 style="color:#34D399; margin-bottom:16px;">🏍️ Captain Payouts & Cash Policy</h3>
+            <div class="config-body" style="padding:0">
+              <div class="config-row">
+                <div class="config-label">
+                  <span>Allow Cash Payments to Captain:</span>
+                  <input type="checkbox" checked style="width:20px; height:20px; accent-color:#00E676;">
+                </div>
+                <small style="color:#64748B">Riders can hand cash directly to the driver at destination.</small>
+              </div>
+
+              <div class="config-row" style="margin-top:10px;">
+                <div class="config-label">
+                  <span>Max Cash Debt Limit per Captain:</span>
+                  <b class="config-val" id="valCashLimit">₹500</b>
+                </div>
+                <input type="range" min="200" max="1500" value="500" step="50" class="slider" oninput="document.getElementById('valCashLimit').innerText='₹'+this.value">
+                <small style="color:#64748B">If Captain collects cash and owes &gt; ₹500 in 20% platform commission, new rides pause until cleared.</small>
+              </div>
+
+              <button class="btn-save-config" onclick="savePaymentConfig()" style="margin-top:14px;">💾 Save Payment Gateway Configuration</button>
+              <button class="btn-table-action" onclick="testGatewayConnection()" style="margin-top:8px; width:100%; padding:10px; background:#F1F5F9; text-align:center;">⚡ Test Payment Gateway Connection</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 7: TEAM & RBAC ================= -->
+      <div id="view-team" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+              <h2 style="font-size:18px; font-weight:800; color:#F8FAFC">Super Admin Team Access & Rights Management</h2>
+              <p style="font-size:12px; color:#94A3B8; margin-top:2px;">Create team members, assign predefined operational roles, or configure granular feature permissions.</p>
+            </div>
+            <button class="btn-save-config" onclick="openAddMemberModal()" style="margin:0; padding:10px 18px; font-size:13px;">
+              ➕ Add New Team Member
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:20px;">
+            <div class="panel" style="padding:16px; border:1px solid #E2E8F0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:18px;">👑</span>
+                <span class="badge-status verified">UNRESTRICTED</span>
+              </div>
+              <h4 style="font-size:14px; font-weight:800; color:#FFF">Super Admin</h4>
+              <p style="font-size:11px; color:#94A3B8; margin-top:4px;">Full system access: Team rights, financial payouts, surge, fleet audit, and payment keys.</p>
+            </div>
+
+            <div class="panel" style="padding:16px; border:1px solid #E2E8F0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:18px;">🚕</span>
+                <span class="badge-status in-progress">DISPATCH</span>
+              </div>
+              <h4 style="font-size:14px; font-weight:800; color:#FFF">Operations Manager</h4>
+              <p style="font-size:11px; color:#94A3B8; margin-top:4px;">Live radar dispatch, customer SOS alerts, ride cancellations, and route telemetry.</p>
+            </div>
+
+            <div class="panel" style="padding:16px; border:1px solid #E2E8F0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:18px;">🪪</span>
+                <span class="badge-status assigned">VERIFIER</span>
+              </div>
+              <h4 style="font-size:14px; font-weight:800; color:#FFF">KYC & Fleet Officer</h4>
+              <p style="font-size:11px; color:#94A3B8; margin-top:4px;">Verify driver licenses (DL), RC certificates, Aadhaar, and approve/suspend captains.</p>
+            </div>
+
+            <div class="panel" style="padding:16px; border:1px solid #E2E8F0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:18px;">💰</span>
+                <span class="badge-status verified">FINANCE</span>
+              </div>
+              <h4 style="font-size:14px; font-weight:800; color:#FFF">Accounts & Payouts</h4>
+              <p style="font-size:11px; color:#94A3B8; margin-top:4px;">Trigger instant daily settlements, review platform commissions, and cash debts.</p>
+            </div>
+          </div>
+
+          <div class="panel" style="border-radius:14px;">
+            <div class="panel-header" style="background:#F8FAFC;">
+              <div class="panel-title">
+                <span>👥 Active Team Members & Assigned Permission Sets</span>
+              </div>
+              <div style="font-size:12px; color:#93C5FD">Showing 4 Staff Members</div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>MEMBER</th>
+                    <th>EMAIL</th>
+                    <th>ASSIGNED ROLE</th>
+                    <th>GRANTED PERMISSIONS</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="teamTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 8: CENTRAL AUDIT LOGS ================= -->
+      <div id="view-logs" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+              <h2 style="font-size:18px; font-weight:800; color:#F8FAFC">Central Audit & Operations Activity Logs</h2>
+              <p style="font-size:12px; color:#94A3B8; margin-top:2px;">Complete immutable trace of all Super Admin, Captain (Rider), and Customer actions.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-table-action" onclick="exportLogsCSV()">📥 Export Audit CSV</button>
+            </div>
+          </div>
+
+          <!-- Log Category Filters & Search -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div class="tab-controls" style="margin:0;">
+              <button class="tab-btn active" id="btnLogAll" onclick="filterLogs('ALL')">📑 All Logs (<span id="countLogAll">9</span>)</button>
+              <button class="tab-btn" id="btnLogAdmin" onclick="filterLogs('ADMIN')">🛡️ Super Admin Logs (<span id="countLogAdmin">3</span>)</button>
+              <button class="tab-btn" id="btnLogRider" onclick="filterLogs('RIDER')">🏍️ Rider (Captain) Logs (<span id="countLogRider">3</span>)</button>
+              <button class="tab-btn" id="btnLogUser" onclick="filterLogs('USER')">👤 Customer (User) Logs (<span id="countLogUser">3</span>)</button>
+            </div>
+
+            <div class="topbar-search" style="width:300px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="logSearchInput" placeholder="Filter by action or actor..." oninput="onLogSearch(this.value)">
+            </div>
+          </div>
+
+          <div class="panel" style="border-radius:14px;">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>LOG ID</th>
+                    <th>TIMESTAMP</th>
+                    <th>ENTITY</th>
+                    <th>ACTOR / USER</th>
+                    <th>EVENT ACTION</th>
+                    <th>EVENT DETAILS</th>
+                    <th>SEVERITY</th>
+                  </tr>
+                </thead>
+                <tbody id="auditLogsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 9: ANONYMOUS CUSTOMER REVIEWS ================= -->
+      <div id="view-reviews" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 10px;">
+          <div style="background:linear-gradient(135deg, #132A4A, #041B3B); border:1.5px solid #006FD4; border-radius:14px; padding:18px; margin-bottom:20px; display:flex; align-items:center; gap:16px;">
+            <div style="font-size:36px;">🛡️</div>
+            <div>
+              <h3 style="color:#60A5FA; font-size:15px; margin-bottom:4px;">Anonymous Customer Review & Safety Shield Active</h3>
+              <p style="color:#CBD5E1; font-size:12px;">To protect riders from retaliatory harassment, reviewer real names, phone numbers, and profile photos are <b>permanently stripped</b> when displayed on Captain profiles. Captains only see: <i>"Verified Holido Rider"</i> or <i>"Verified Parcel Sender"</i>.</p>
+            </div>
+          </div>
+
+          <div class="panel" style="border-radius:14px;">
+            <div class="panel-header" style="background:#F8FAFC;">
+              <div class="panel-title">
+                <span>⭐ Customer Reviews & Comments Feed (Bike Taxi + Parcel Couriers)</span>
+              </div>
+              <div style="font-size:12px; color:#FBBF24">Average Holido Fleet Rating: 4.86 ★</div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>REVIEW ID</th>
+                    <th>SERVICE</th>
+                    <th>CAPTAIN</th>
+                    <th>RATING</th>
+                    <th>PUBLIC ANONYMOUS DISPLAY</th>
+                    <th>COMMENT / FEEDBACK</th>
+                    <th>ADMIN PRIVATE AUDIT NAME</th>
+                    <th>DATE</th>
+                  </tr>
+                </thead>
+                <tbody id="reviewsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 10: SUPER ADMIN MASTER PROFILE ================= -->
+      <div id="view-profile" class="view-section hidden">
+        <section class="pricing-detail-grid">
+          <div class="panel" style="padding:28px;">
+            <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
+              <div class="profile-avatar" style="width:72px; height:72px; font-size:28px; border:2px solid #38BDF8;" id="pageAdminAvatar">A</div>
+              <div>
+                <h2 style="font-size:22px; font-weight:900; color:#FFF" id="pageAdminName">Akshay Kumar</h2>
+                <div style="font-size:13px; color:#38BDF8; font-weight:bold; margin-top:2px;">Root Super Administrator • Holido Platform Owner</div>
+                <div style="font-size:12px; color:#94A3B8; margin-top:2px;" id="pageAdminEmail">admin@holido.in</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+              <div class="bank-row"><span>Super Admin Username:</span> <b id="pageAdminUsername" style="color:#38BDF8">admin_holido</b></div>
+              <div class="bank-row"><span>Role Privilege Level:</span> <b class="badge-status verified">LEVEL 0 - UNRESTRICTED</b></div>
+              <div class="bank-row"><span>Two-Factor / Master PIN:</span> <b style="color:#34D399; font-family:monospace">CONFIGURED (6-DIGIT)</b></div>
+              <div class="bank-row"><span>Root Session Status:</span> <b style="color:#00E676">SECURE & ACTIVE</b></div>
+            </div>
+
+            <button class="btn-save-config" onclick="openAdminSecurityModal()" style="margin-top:20px; width:100%;">
+              🔑 Change Super Admin ID, Password & Security PIN
+            </button>
+          </div>
+
+          <div class="panel" style="padding:28px;">
+            <h3 style="color:#60A5FA; margin-bottom:16px;">🛡️ Super Admin Root Authority Matrix</h3>
+            <ul class="audit-list" style="font-size:12.5px; gap:12px;">
+              <li><span class="check-icon ok">✔</span> Full authority to adjust 24h Daily Pass fee & Surge rates</li>
+              <li><span class="check-icon ok">✔</span> Unrestricted access to approve/suspend Captains & Drivers</li>
+              <li><span class="check-icon ok">✔</span> Instant authority to process Tuesday weekly bank settlements</li>
+              <li><span class="check-icon ok">✔</span> Privilege to assign, grant or revoke rights for team members</li>
+              <li><span class="check-icon ok">✔</span> Full visibility into Central Immutable Audit Logs (Admin, Rider, User)</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL: CAPTAIN KYC & DOCUMENT INSPECTION -->
+  <div id="kycModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'kycModal')">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">CAPTAIN AUDIT & KYC</span>
+          <h2 id="modalCapName">Rahul Sharma (CAP-101)</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('kycModal')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="cap-profile-strip">
+          <div class="cap-avatar-lg">🏍️</div>
+          <div class="cap-strip-details">
+            <div class="cap-main-line">
+              <span class="cap-name-large" id="stripName">Rahul Sharma</span>
+              <span class="badge-status verified" id="stripKycBadge">KYC VERIFIED</span>
+              <span class="badge-status in-progress" id="stripStatus">ON TRIP</span>
+            </div>
+            <div class="cap-sub-line">
+              <span>📞 <b id="stripPhone">+91 98765 43210</b></span>
+              <span>⭐ <b id="stripRating">4.88 (1,420 trips)</b></span>
+              <span>🏍️ <b id="stripVehicle">Hero Splendor Plus (DL 01 AB 4592)</b></span>
+              <span>🩸 Blood Group: <b>B+</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-tabs">
+          <button class="doc-tab active" id="tabDl" onclick="switchDocTab('dl')">🪪 Driving License (DL)</button>
+          <button class="doc-tab" id="tabRc" onclick="switchDocTab('rc')">📄 Vehicle RC Certificate</button>
+          <button class="doc-tab" id="tabAadhar" onclick="switchDocTab('aadhar')">🆔 Aadhaar & Identity</button>
+          <button class="doc-tab" id="tabBank" onclick="switchDocTab('bank')">🏦 Bank & Settlements</button>
+        </div>
+
+        <!-- 1. DRIVING LICENSE CARD -->
+        <div id="docViewDl" class="doc-content-panel">
+          <div class="doc-card-layout">
+            <div class="smart-card dl-card">
+              <div class="card-top">
+                <span class="card-emblem">🇮🇳</span>
+                <div class="card-state">UNION OF INDIA • TRANSPORT DEPT DELHI</div>
+              </div>
+              <div class="card-main">
+                <div class="card-photo">👤</div>
+                <div class="card-fields">
+                  <div class="cf-row"><span class="cf-lbl">DL NO:</span> <b class="cf-val" id="dlNumber">DL-0420180094592</b></div>
+                  <div class="cf-row"><span class="cf-lbl">NAME:</span> <b class="cf-val" id="dlHolderName">RAHUL SHARMA</b></div>
+                  <div class="cf-row"><span class="cf-lbl">DOB:</span> <span class="cf-val">14-08-1996</span></div>
+                  <div class="cf-row"><span class="cf-lbl">CLASS:</span> <b class="cf-val" style="color:#38BDF8">MCWG (Motorcycle with Gear)</b></div>
+                  <div class="cf-row"><span class="cf-lbl">VALID TILL:</span> <b class="cf-val" style="color:#00E676">13-08-2036 (ACTIVE)</b></div>
+                </div>
+              </div>
+              <div class="card-bottom">
+                <span>AUTHORITY: RTO JANAKPURI DELHI</span>
+                <span class="card-chip">🔒 CHIP VERIFIED</span>
+              </div>
+            </div>
+
+            <div class="doc-audit-sidebar">
+              <h4>DL Verification Checklist</h4>
+              <ul class="audit-list">
+                <li><span class="check-icon ok">✔</span> Sarathi VAHAN Database Match: <b>CONFIRMED</b></li>
+                <li><span class="check-icon ok">✔</span> Two-Wheeler MCWG Endorsement: <b>YES</b></li>
+                <li><span class="check-icon ok">✔</span> Document Expiry Date: <b>VALID (10+ Yrs)</b></li>
+                <li><span class="check-icon ok">✔</span> Photo & Facial Match: <b>98.4% Match</b></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. VEHICLE RC CARD -->
+        <div id="docViewRc" class="doc-content-panel hidden">
+          <div class="doc-card-layout">
+            <div class="smart-card rc-card">
+              <div class="card-top">
+                <span class="card-emblem">🏛️</span>
+                <div class="card-state">CERTIFICATE OF REGISTRATION • GOVT OF NCT DELHI</div>
+              </div>
+              <div class="card-main">
+                <div class="card-photo bike-icon">🏍️</div>
+                <div class="card-fields">
+                  <div class="cf-row"><span class="cf-lbl">REGN NO:</span> <b class="cf-val highlight" id="rcNumber">DL 01 AB 4592</b></div>
+                  <div class="cf-row"><span class="cf-lbl">OWNER:</span> <b class="cf-val" id="rcOwner">RAHUL SHARMA</b></div>
+                  <div class="cf-row"><span class="cf-lbl">VEHICLE:</span> <span class="cf-val" id="rcModel">HERO MOTOCORP - SPLENDOR PLUS</span></div>
+                  <div class="cf-row"><span class="cf-lbl">FUEL:</span> <span class="cf-val">PETROL / BS-VI</span></div>
+                  <div class="cf-row"><span class="cf-lbl">INSURANCE:</span> <b class="cf-val" style="color:#00E676">TATA AIG (Valid till 2028-11-20)</b></div>
+                  <div class="cf-row"><span class="cf-lbl">PUCC FITNESS:</span> <b class="cf-val" style="color:#00E676">PASS (Valid till 2027-05-10)</b></div>
+                </div>
+              </div>
+              <div class="card-bottom">
+                <span>REGISTERED AT: RTO MALL ROAD</span>
+                <span class="card-chip">VAHAN 4.0 VERIFIED</span>
+              </div>
+            </div>
+
+            <div class="doc-audit-sidebar">
+              <h4>Vehicle Audit Checklist</h4>
+              <ul class="audit-list">
+                <li><span class="check-icon ok">✔</span> Commercial Transport Permit: <b>APPROVED</b></li>
+                <li><span class="check-icon ok">✔</span> Active Third-Party Insurance: <b>ACTIVE</b></li>
+                <li><span class="check-icon ok">✔</span> Air Pollution (PUC) Certificate: <b>VALID</b></li>
+                <li><span class="check-icon ok">✔</span> Stolen / Theft Blacklist Check: <b>CLEAR</b></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. AADHAAR CARD -->
+        <div id="docViewAadhar" class="doc-content-panel hidden">
+          <div class="doc-card-layout">
+            <div class="smart-card aadhar-card">
+              <div class="card-top">
+                <span class="card-emblem">🇮🇳</span>
+                <div class="card-state">GOVERNMENT OF INDIA • UNIQUE IDENTIFICATION AUTHORITY</div>
+              </div>
+              <div class="card-main">
+                <div class="card-photo">👤</div>
+                <div class="card-fields">
+                  <div class="cf-row"><span class="cf-lbl">AADHAAR NO:</span> <b class="cf-val" style="letter-spacing:2px">XXXX - XXXX - 4592</b></div>
+                  <div class="cf-row"><span class="cf-lbl">NAME:</span> <b class="cf-val" id="aadharName">Rahul Sharma</b></div>
+                  <div class="cf-row"><span class="cf-lbl">GENDER:</span> <span class="cf-val">Male</span></div>
+                  <div class="cf-row"><span class="cf-lbl">ADDRESS:</span> <span class="cf-val">Flat 402, Block C, Rohini Sector 8, New Delhi - 110085</span></div>
+                </div>
+              </div>
+              <div class="card-bottom">
+                <span>UIDAI SECURE QR VERIFIED</span>
+                <span class="card-chip">DIGILOCKER SYNCED</span>
+              </div>
+            </div>
+
+            <div class="doc-audit-sidebar">
+              <h4>Identity Verification</h4>
+              <ul class="audit-list">
+                <li><span class="check-icon ok">✔</span> DigiLocker Government API: <b>VERIFIED</b></li>
+                <li><span class="check-icon ok">✔</span> Address Proof: <b>VALID RESIDENT</b></li>
+                <li><span class="check-icon ok">✔</span> Police Background Clearance: <b>APPROVED</b></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. BANK & PAYOUTS -->
+        <div id="docViewBank" class="doc-content-panel hidden">
+          <div class="bank-layout">
+            <div class="bank-card">
+              <div class="bank-title">Captain Payout Account</div>
+              <div class="bank-row"><span>Account Holder:</span> <b id="bankHolder">Rahul Sharma</b></div>
+              <div class="bank-row"><span>Bank Name:</span> <b>State Bank of India (SBI)</b></div>
+              <div class="bank-row"><span>Account No:</span> <b>XXXXXX8819</b></div>
+              <div class="bank-row"><span>IFSC Code:</span> <b>SBIN0004210</b></div>
+              <div class="bank-row"><span>UPI ID:</span> <b id="bankUpi">9876543210@sbi</b></div>
+              <div class="bank-status-pill">✔ Bank Penny Drop Verified</div>
+            </div>
+            <div class="payout-summary">
+              <div class="ps-title">Today's Earnings Summary</div>
+              <div class="ps-amount" id="modalCapEarnings">₹840.00</div>
+              <div class="ps-sub">7 Trips Completed • Commission Deducted (20%)</div>
+              <button class="btn-payout-now" onclick="alert('Instant UPI settlement triggered to captain UPI ID!')">⚡ Trigger Instant Daily Settlement</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger-outline" onclick="suspendCaptain()">🚫 Suspend / Block Captain</button>
+        <div class="footer-actions">
+          <button class="btn-warning-outline" onclick="requestDocReupload()">⚠️ Request Document Re-upload</button>
+          <button class="btn-success" onclick="approveCaptainKyc()">✔ Approve All Documents & KYC</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOMER PROFILE & RIDE HISTORY -->
+  <div id="userModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'userModal')">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">CUSTOMER PROFILE</span>
+          <h2 id="modalCustName">Akshay Kumar</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('userModal')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="cust-profile-card">
+          <div class="cust-avatar-large">👤</div>
+          <div class="cust-details">
+            <h3 id="custProfileName">Akshay Kumar</h3>
+            <p>📞 <span id="custProfilePhone">+91 98765 11111</span></p>
+            <p>📧 <span>akshay.k@example.com</span></p>
+            <div class="cust-stats-row">
+              <div class="cust-stat"><span class="cs-num">34</span><span class="cs-lbl">Rides Taken</span></div>
+              <div class="cust-stat"><span class="cs-num">★ 4.95</span><span class="cs-lbl">Rider Rating</span></div>
+              <div class="cust-stat"><span class="cs-num">₹1,840</span><span class="cs-lbl">Total Spent</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin: 16px 0 8px; color:#93C5FD">Emergency SOS Contacts</h4>
+        <div class="sos-card">
+          <span>Primary SOS: <b>Rajesh Kumar (Father) • +91 98222 00000</b></span>
+          <span class="badge-status verified">SMS & GPS ALERT ACTIVE</span>
+        </div>
+
+        <h4 style="margin: 16px 0 8px; color:#93C5FD">Recent Holido Rides</h4>
+        <div class="recent-trips-list">
+          <div class="mini-trip-item">
+            <div><b>India Gate → Connaught Place</b> <br><small>Today, 12:45 PM • Bike Taxi</small></div>
+            <div style="text-align:right"><b style="color:#38BDF8">₹35</b><br><span class="badge-status in-progress">In Transit</span></div>
+          </div>
+          <div class="mini-trip-item">
+            <div><b>Noida Sector 62 → Akshardham</b> <br><small>Yesterday, 6:15 PM • Bike Taxi</small></div>
+            <div style="text-align:right"><b style="color:#34D399">₹58</b><br><span class="badge-status completed">Completed</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger-outline" onclick="alert('User safety audit complete. No flags.')">🛡️ Safety Log Audit</button>
+        <button class="btn-primary-blue" onclick="closeModal('userModal')">Close Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT TEAM MEMBER & PERMISSIONS -->
+  <div id="teamModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'teamModal')">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">SUPER ADMIN RBAC</span>
+          <h2 id="modalTeamTitle">Assign Team Permissions</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('teamModal')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="editMemberId">
+
+        <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:18px;">
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">TEAM MEMBER FULL NAME</label>
+            <input type="text" id="memberInputName" placeholder="e.g. Priyansh Patel" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">WORK EMAIL</label>
+            <input type="email" id="memberInputEmail" placeholder="e.g. priyansh@holido.in" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">ROLE PRESET TEMPLATE</label>
+            <select id="memberRolePreset" onchange="applyRolePreset(this.value)" style="width:100%; margin-top:4px; background:#F1F5F9; border:1px solid #E2E8F0; color:#38BDF8; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+              <option value="CUSTOM">Custom Permissions (Manual Selection)</option>
+              <option value="OPERATIONS">Operations Manager (Radar & Trips)</option>
+              <option value="KYC">KYC & Onboarding Officer (DL & RC)</option>
+              <option value="FINANCE">Finance & Accounts (Payouts & Revenue)</option>
+              <option value="SUPERADMIN">Super Admin (Full Access)</option>
+            </select>
+          </div>
+        </div>
+
+        <h4 style="color:#60A5FA; margin-bottom:10px; font-size:13px;">Granular Permission Rights Matrix</h4>
+        <div class="permissions-checklist">
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_radar" checked>
+            <div>
+              <div class="perm-title">Live Dispatch Radar & GPS Telemetry</div>
+              <div class="perm-desc">Can track moving captains on map & view fleet locations.</div>
+            </div>
+          </label>
+
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_trips" checked>
+            <div>
+              <div class="perm-title">Active Trips Management & SOS Escalations</div>
+              <div class="perm-desc">Can monitor active rides, cancel trips & dispatch emergency safety protocols.</div>
+            </div>
+          </label>
+
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_kyc">
+            <div>
+              <div class="perm-title">Captain Onboarding, Driving License & RC Audit</div>
+              <div class="perm-desc">Can verify DL, vehicle documents, approve KYC, or suspend drivers.</div>
+            </div>
+          </label>
+
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_pricing">
+            <div>
+              <div class="perm-title">Dynamic Pricing, Base Fares & Rain Surge Controls</div>
+              <div class="perm-desc">Can modify ₹ base fare, per km rate, and trigger 1.5x surge pricing.</div>
+            </div>
+          </label>
+
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_payouts">
+            <div>
+              <div class="perm-title">Captain Instant UPI Payouts & Settlement Ledger</div>
+              <div class="perm-desc">Can trigger daily payouts directly to captain bank accounts.</div>
+            </div>
+          </label>
+
+          <label class="perm-checkbox-item">
+            <input type="checkbox" id="perm_settings">
+            <div>
+              <div class="perm-title">Payment Gateway Keys & Super Admin Settings</div>
+              <div class="perm-desc">Can update Razorpay/Cashfree credentials and manage other team members.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger-outline" onclick="closeModal('teamModal')">Cancel</button>
+        <button class="btn-save-config" onclick="saveTeamMemberRights()" style="margin:0; padding:10px 20px;">💾 Save & Assign Rights</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE / EDIT GEO-HEX DEMAND ZONE (FULL CRUD) -->
+  <div id="geoHexModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'geoHexModal')">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge" id="geoModalBadge">DEMAND DISPATCH ENGINE</span>
+          <h2 id="geoModalTitle">Create New Geo-Hex Demand Zone</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('geoHexModal')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="geoEditMode" value="CREATE">
+        <input type="hidden" id="geoOriginalId" value="">
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#64748B;">ZONE ID (H3 INDEX)</label>
+              <input type="text" id="geoInputId" placeholder="e.g. H3-DL06" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #CBD5E1; color:#006FD4; padding:10px; border-radius:8px; font-weight:bold; font-family:monospace; font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#64748B;">ZONE NAME</label>
+              <input type="text" id="geoInputName" placeholder="e.g. Rohini & Pitampura Tech Hub" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; padding:10px; border-radius:8px; font-size:13px; font-weight:600;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#64748B;">LANDMARK & REGION DETAILS</label>
+            <input type="text" id="geoInputLandmark" placeholder="e.g. Outer Ring Road, Pitampura Metro, Netaji Subhash Place" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#64748B;">DEMAND TIER</label>
+              <select id="geoSelectDemand" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                <option value="NORMAL">NORMAL (1.0x Standard)</option>
+                <option value="MODERATE">MODERATE (1.2x - 1.3x)</option>
+                <option value="HIGH">HIGH (1.4x - 1.5x)</option>
+                <option value="PEAK">PEAK (1.6x - 1.8x)</option>
+                <option value="CRITICAL">CRITICAL (2.0x+ Extreme)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#64748B;">SURGE MULTIPLIER (1.0x - 3.5x)</label>
+              <input type="number" id="geoInputMultiplier" min="1.0" max="3.5" step="0.1" value="1.5" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #CBD5E1; color:#FF8100; padding:10px; border-radius:8px; font-size:14px; font-weight:900;">
+            </div>
+          </div>
+
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+              <input type="checkbox" id="geoCheckActive" checked style="width:18px; height:18px; accent-color:#006FD4;">
+              <div>
+                <b style="font-size:12.5px; color:#0F172A;">Activate Surge Multiplier Immediately</b>
+                <div style="font-size:11px; color:#64748B;">When active, incoming customer ride requests originating in this zone apply this surge multiplier.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger-outline" onclick="closeModal('geoHexModal')">Cancel</button>
+        <button class="btn-save-config" onclick="saveGeoHexZoneModal()" style="margin:0; padding:10px 22px;">💾 Save Zone</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RIDER PAYOUT SLIP / SETTLEMENT VOUCHER -->
+  <div id="riderPaySlipModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'riderPaySlipModal')">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">TUESDAY WEEKLY SETTLEMENT VOUCHER</span>
+          <h2 id="slipModalTitle">Rider Payout Statement</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('riderPaySlipModal')">✕</button>
+      </div>
+
+      <div class="modal-body" id="slipModalBody" style="padding: 20px;">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-table-action" onclick="window.print()">🖨️ Print Statement</button>
+        <button class="btn-save-config" id="btnSlipDisburse" onclick="disburseCurrentModalPayout()" style="margin:0; padding:10px 20px; background:#059669;">
+          ⚡ Disburse via Instant UPI
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUPER ADMIN ID & PASSWORD SECURITY -->
+  <div id="adminSecurityModal" class="modal-overlay hidden" onclick="onBackdropClick(event, 'adminSecurityModal')">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">ROOT ACCESS CREDENTIALS</span>
+          <h2>Super Admin Security & Password</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('adminSecurityModal')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="profile-avatar" style="width:44px; height:44px; font-size:16px;" id="modalAdminAvatar">A</div>
+            <div>
+              <div style="font-weight:800; font-size:14px; color:#FFF" id="modalAdminFullname">Akshay Kumar</div>
+              <div style="font-size:11px; color:#60A5FA">Root Super Administrator • Holido Platform Owner</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#94A3B8;">SUPER ADMIN USERNAME / ID</label>
+              <input type="text" id="adminInputUsername" value="admin_holido" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#38BDF8; padding:10px; border-radius:8px; font-weight:bold; font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#94A3B8;">ADMIN DISPLAY NAME</label>
+              <input type="text" id="adminInputName" value="Akshay Kumar" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">REGISTERED SUPER ADMIN EMAIL</label>
+            <input type="email" id="adminInputEmail" value="admin@holido.in" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+          </div>
+
+          <div style="border-top:1px solid #E2E8F0; padding-top:14px;">
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">CURRENT PASSWORD</label>
+            <input type="password" id="adminCurrentPassword" placeholder="Enter current password to verify identity" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#94A3B8;">NEW PASSWORD</label>
+              <input type="password" id="adminNewPassword" placeholder="Min 8+ characters" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #006FD4; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:#94A3B8;">CONFIRM NEW PASSWORD</label>
+              <input type="password" id="adminConfirmPassword" placeholder="Re-type new password" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #006FD4; color:#0F172A; padding:10px; border-radius:8px; font-size:13px;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#94A3B8;">MASTER 6-DIGIT SECURITY PIN (For Sensitive Authorizations)</label>
+            <input type="text" id="adminSecurityPin" maxlength="6" value="482910" style="width:100%; margin-top:4px; background:#F8FAFC; border:1px solid #E2E8F0; color:#34D399; letter-spacing:4px; font-family:monospace; padding:10px; border-radius:8px; font-weight:bold; font-size:14px;">
+            <small style="color:#64748B">Used to authorize manual payouts and extreme surge multipliers.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger-outline" onclick="closeModal('adminSecurityModal')">Cancel</button>
+        <button class="btn-save-config" onclick="saveSuperAdminCredentials()" style="margin:0; padding:10px 20px;">💾 Save New ID & Password</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="embBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#07101E"/>
+    </linearGradient>
+    <linearGradient id="embCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="embGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="embSpeed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="embGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle Shield -->
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#embBg)" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.85"/>
+
+  <!-- Speed Streaks -->
+  <path d="M 10 22 L 20 22" stroke="url(#embSpeed)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 7 32 L 17 32" stroke="url(#embSpeed)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 11 42 L 20 42" stroke="url(#embSpeed)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Aerodynamic 'H' Monogram -->
+  <!-- Left Pillar -->
+  <path d="M 22 47 L 27 17 C 27.2 15.9 28.5 15.3 29.6 15.7 C 30.7 16.1 31.3 17.4 30.9 18.5 L 26.2 46.5 C 25.9 47.6 24.6 48.2 23.5 47.8 C 22.4 47.4 21.8 46.1 22.2 45 Z" fill="url(#embCyan)"/>
+
+  <!-- Right Pillar -->
+  <path d="M 37 47 L 42 17 C 42.2 15.9 43.5 15.3 44.6 15.7 C 45.7 16.1 46.3 17.4 45.9 18.5 L 41.2 46.5 C 40.9 47.6 39.6 48.2 38.5 47.8 C 37.4 47.4 36.8 46.1 37.2 45 Z" fill="url(#embCyan)"/>
+
+  <!-- Speed Arrow Cross Bridge -->
+  <path d="M 24 33 L 48 28 L 36 36 L 50 31 L 39 40 L 33 36 Z" fill="url(#embGold)" filter="url(#embGlow)"/>
+
+  <!-- Precision Location Dot -->
+  <circle cx="50" cy="31" r="3.2" fill="#FFFFFF" filter="url(#embGlow)"/>
+</svg>
