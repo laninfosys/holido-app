@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holido - Ride Hailing & Parcel Delivery Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background: #F8FAFC;
+      color: #0F172A;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .header-logo {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+    }
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .btn-github {
+      background: #0F172A;
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-github:hover {
+      background: #1E293B;
+      transform: translateY(-1px);
+    }
+    main {
+      flex: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      width: 100%;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #006FD4;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      border: 1px solid #BFDBFE;
+    }
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 900;
+      color: #042045;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      font-size: 17px;
+      color: #64748B;
+      max-width: 640px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+    .portal-card {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .portal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0, 111, 212, 0.08);
+      border-color: #006FD4;
+    }
+    .portal-card.primary {
+      border-color: #006FD4;
+    }
+    .card-tag {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: #EFF6FF;
+      color: #006FD4;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .card-icon {
+      font-size: 36px;
+      margin-bottom: 18px;
+      display: inline-block;
+    }
+    .card-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 10px;
+    }
+    .card-desc {
+      font-size: 14.5px;
+      color: #64748B;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .feature-list li {
+      font-size: 13.5px;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-launch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-blue {
+      background: #006FD4;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(0, 111, 212, 0.3);
+    }
+    .btn-blue:hover {
+      background: #0056A6;
+      box-shadow: 0 6px 18px rgba(0, 111, 212, 0.4);
+    }
+    .btn-dark {
+      background: #042045;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(4, 32, 69, 0.25);
+    }
+    .btn-dark:hover {
+      background: #0A2E5C;
+    }
+    .features-strip {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .feature-item-icon {
+      font-size: 24px;
+    }
+    .feature-item-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 2px;
+    }
+    .feature-item-text p {
+      font-size: 12px;
+      color: #64748B;
+    }
+    footer {
+      background: #FFFFFF;
+      border-top: 1px solid #E2E8F0;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748B;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="assets/logo/holido_logo_white_text.png" alt="Holido Logo" class="header-logo">
+    </div>
+    <div class="header-badges">
+      <span class="badge-live"><span class="pulse-dot"></span> LIVE ON GITHUB PAGES</span>
+      <a href="https://github.com/laninfosys/holido-app" target="_blank" class="btn-github">
+        <span>⭐ GitHub Repository</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-badge">🚀 100% FREE CLOUD HOSTING</div>
+      <h1>Holido Mobility & Logistics Command Hub</h1>
+      <p>Seamless Bike Taxi, Auto, Cab & Parcel Delivery Engine with complete Super Admin Dispatch, Surge Multipliers, and Captain Payouts.</p>
+    </div>
+
+    <div class="portal-grid">
+      <!-- CARD 1: DUAL MOBILE APPS -->
+      <div class="portal-card primary">
+        <span class="card-tag">INTERACTIVE SIMULATOR</span>
+        <div>
+          <span class="card-icon">📱</span>
+          <h2 class="card-title">Dual Mobile Apps</h2>
+          <p class="card-desc">Simulate both Rider booking and Captain dispatch side-by-side with real-time GPS tracking and OTP verification.</p>
+          <ul class="feature-list">
+            <li>✅ <b>Customer Commute:</b> Bike, Auto, Cab & Parcel booking</li>
+            <li>✅ <b>Captain Dispatch:</b> Instant trip alerts & accept/reject</li>
+            <li>✅ <b>Live Tracking:</b> Animated ride progress & OTP Start</li>
+            <li>✅ <b>Transparent Design:</b> Official Holido White/Blue Theme</li>
+          </ul>
+        </div>
+        <a href="simulator/public/index.html" class="btn-launch btn-blue">
+          <span>🚀 Launch Mobile Apps Simulator</span>
+          <span>→</span>
+        </a>
+      </div>
+
+      <!-- CARD 2: SUPER ADMIN PORTAL -->
+      <div class="portal-card">
+        <span class="card-tag" style="background:#ECFDF5; color:#059669;">FULL ADMIN ACCESS</span>
+        <div>
+          <span class="card-icon">📊</span>
+          <h2 class="card-title">Super Admin Command Center</h2>
+          <p class="card-desc">Enterprise operations dashboard for live fleet monitoring, revenue calculations, KYC audits, and platform controls.</p>
+          <ul class="feature-list">
+            <li>✅ <b>Rider-Wise Payments:</b> Tuesday weekly payout settlements</li>
+            <li>✅ <b>Surge Multipliers:</b> Geo-Hex demand zones (Full CRUD)</li>
+            <li>✅ <b>Platform Access Fees:</b> Customizable payment gateways</li>
+            <li>✅ <b>Fleet KYC:</b> Document verification & selfie daily passes</li>
+          </ul>
+        </div>
+        <a href="admin/index.html" class="btn-launch btn-dark">
+          <span>👑 Launch Super Admin Portal</span>
+          <span>→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- FEATURES STRIP -->
+    <div class="features-strip">
+      <div class="feature-item">
+        <span class="feature-item-icon">⚡</span>
+        <div class="feature-item-text">
+          <h4>Geo-Hex Surge Engine</h4>
+          <p>Create, edit & delete peak demand zones</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-item-icon">💵</span>
+        <div class="feature-item-text">
+          <h4>Tuesday Payouts</h4>
+          <p>Automated 80% Captain disbursements</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-item-icon">🛡️</span>
+        <div class="feature-item-text">
+          <h4>Masked Reviews</h4>
+          <p>100% anonymous passenger feedback</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-item-icon">🔒</span>
+        <div class="feature-item-text">
+          <h4>Super Admin Security</h4>
+          <p>Self-service ID, password & PIN reset</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Holido Technologies Pvt. Ltd. • Deployed 100% Free on GitHub Pages • Open Source Mobility Platform</p>
+  </footer>
+</body>
+</html>
