@@ -44,20 +44,88 @@
 
           <!-- Screen 1: Booking Selection -->
           <div id="custBookingView" class="view-panel">
+            <!-- Location Input Card (Interactive All-India Search & Ahmedabad Active Zone) -->
             <div class="location-card">
               <div class="loc-row">
                 <span class="loc-icon pickup">●</span>
-                <div class="loc-text">
-                  <span class="loc-label">PICKUP</span>
-                  <input type="text" id="pickupAddr" value="India Gate, New Delhi" readonly>
+                <div class="loc-text" style="flex:1;">
+                  <span class="loc-label">PICKUP LOCATION</span>
+                  <input type="text" id="pickupAddr" value="SG Highway, Ahmedabad, Gujarat" list="locationsList" oninput="checkServiceableLocations()" placeholder="Enter Pickup Landmark or Area in Ahmedabad">
                 </div>
               </div>
               <div class="loc-divider"></div>
               <div class="loc-row">
                 <span class="loc-icon drop">■</span>
-                <div class="loc-text">
-                  <span class="loc-label">DROP</span>
-                  <input type="text" id="dropAddr" value="Connaught Place, Central Delhi" readonly>
+                <div class="loc-text" style="flex:1;">
+                  <span class="loc-label">DESTINATION / DROP</span>
+                  <input type="text" id="dropAddr" value="Vastrapur Lake, Ahmedabad, Gujarat" list="locationsList" oninput="checkServiceableLocations()" placeholder="Enter Destination Area or City">
+                </div>
+              </div>
+            </div>
+
+            <!-- Autocomplete Locations Datalist -->
+            <datalist id="locationsList">
+              <option value="SG Highway, Ahmedabad, Gujarat">
+              <option value="Navrangpura, Ahmedabad, Gujarat">
+              <option value="Vastrapur Lake, Ahmedabad, Gujarat">
+              <option value="C.G. Road, Ahmedabad, Gujarat">
+              <option value="Maninagar, Ahmedabad, Gujarat">
+              <option value="Prahlad Nagar, Ahmedabad, Gujarat">
+              <option value="Bopal, Ahmedabad, Gujarat">
+              <option value="Sindhu Bhavan Road, Ahmedabad, Gujarat">
+              <option value="Kalupur Railway Station, Ahmedabad, Gujarat">
+              <option value="Sardar Vallabhbhai Patel Airport, Ahmedabad, Gujarat">
+              <option value="Science City, Ahmedabad, Gujarat">
+              <option value="GIFT City, Gandhinagar, Gujarat">
+              <option value="Surat Railway Station, Surat, Gujarat">
+              <option value="Athwalines, Surat, Gujarat">
+              <option value="Alkapuri, Vadodara, Gujarat">
+              <option value="Yagnik Road, Rajkot, Gujarat">
+              <option value="Marine Drive, Mumbai, Maharashtra">
+              <option value="Bandra West, Mumbai, Maharashtra">
+              <option value="Connaught Place, New Delhi">
+              <option value="Koramangala, Bengaluru, Karnataka">
+            </datalist>
+
+            <!-- Quick Landmark Presets & Other City Test Chips -->
+            <div class="quick-loc-chips">
+              <span class="loc-chip active" onclick="setQuickLocation('SG Highway, Ahmedabad, Gujarat', 'Vastrapur Lake, Ahmedabad, Gujarat')">📍 SG Hwy → Vastrapur</span>
+              <span class="loc-chip" onclick="setQuickLocation('Navrangpura, Ahmedabad, Gujarat', 'C.G. Road, Ahmedabad, Gujarat')">📍 Navrangpura</span>
+              <span class="loc-chip" onclick="setQuickLocation('Maninagar, Ahmedabad, Gujarat', 'Kalupur Railway Station, Ahmedabad, Gujarat')">📍 Maninagar</span>
+              <span class="loc-chip" onclick="setQuickLocation('Bopal, Ahmedabad, Gujarat', 'Sindhu Bhavan Road, Ahmedabad, Gujarat')">📍 Bopal</span>
+              <span class="loc-chip outside" onclick="setQuickLocation('Surat Railway Station, Surat, Gujarat', 'Athwalines, Surat, Gujarat')" title="Test Coming Soon Notification">🚀 Surat (Test Coming Soon)</span>
+              <span class="loc-chip outside" onclick="setQuickLocation('Marine Drive, Mumbai, Maharashtra', 'Bandra West, Mumbai, Maharashtra')" title="Test Coming Soon Notification">🚀 Mumbai (Test Coming Soon)</span>
+            </div>
+
+            <!-- ACTIVE SERVICE CITY BADGE (When inside Ahmedabad) -->
+            <div id="activeCityBanner" style="display:flex; align-items:center; justify-content:space-between; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:6px 10px; margin-bottom:12px; font-size:11px; color:#065F46;">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <span class="pulse-dot" style="width:6px; height:6px;"></span>
+                <span>Active Service City: <b>Ahmedabad, Gujarat</b></span>
+              </span>
+              <span style="font-weight:bold; font-size:10px; background:#10B981; color:#FFF; padding:1px 6px; border-radius:4px;">LIVE DISPATCH ✔</span>
+            </div>
+
+            <!-- WE ARE COMING SOON BANNER (Geo-Fencing Alert when unserved city is entered) -->
+            <div id="comingSoonBanner" class="coming-soon-card hidden">
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <span style="font-size:24px;">🚀</span>
+                <div style="flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <b style="font-size:13.5px; color:#92400E;">We are coming soon to <span id="comingSoonCityName">Surat</span>!</b>
+                    <span class="badge-status assigned" style="font-size:9.5px;">EXPANDING SOON</span>
+                  </div>
+                  <p style="font-size:11.5px; color:#78350F; margin:4px 0 10px; line-height:1.4;">
+                    Holido ride & parcel dispatch is active in <b>Ahmedabad, Gujarat</b> and expanding across India. We don't have active Captains in <span id="comingSoonCityRef">your area</span> yet!
+                  </p>
+                  <div style="display:flex; gap:8px;">
+                    <button type="button" onclick="joinCityWaitlist()" style="padding:6px 12px; font-size:11px; background:#D97706; color:#FFF; border:none; font-weight:bold; border-radius:6px; cursor:pointer;">
+                      🔔 Join Waitlist (+₹50 Free Credit)
+                    </button>
+                    <button type="button" onclick="resetToAhmedabadLocations()" style="padding:6px 12px; font-size:11px; background:#FFFFFF; color:#042045; border:1px solid #CBD5E1; font-weight:bold; border-radius:6px; cursor:pointer;">
+                      📍 Switch to Ahmedabad
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -447,8 +515,8 @@
               <div style="font-size:11px; color:#FBBF24; font-weight:bold; margin-bottom:4px;" id="offerPayMode">💵 Payment: Cash to Captain</div>
               <div class="offer-dist">0.6 km from pickup</div>
               <div class="offer-routes">
-                <div class="route-p">🟢 <span id="offerPickup">India Gate</span></div>
-                <div class="route-d">🔴 <span id="offerDrop">Connaught Place</span></div>
+                <div class="route-p">🟢 <span id="offerPickup">SG Highway, Ahmedabad</span></div>
+                <div class="route-d">🔴 <span id="offerDrop">Vastrapur Lake, Ahmedabad</span></div>
               </div>
               <div class="offer-actions">
                 <button class="btn-reject" onclick="rejectOffer()">Pass</button>

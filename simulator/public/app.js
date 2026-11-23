@@ -92,9 +92,9 @@ let activeRide = null;
 let countdownInterval = null;
 let bikeAnimationId = null;
 
-// Map Coordinates (Pixel based for 520x580 canvas)
-const PICKUP_POS = { x: 130, y: 440, label: 'India Gate' };
-const DROP_POS = { x: 390, y: 140, label: 'Connaught Place' };
+// Map Coordinates (Pixel based for 520x580 canvas) - Ahmedabad Pilot Hub
+const PICKUP_POS = { x: 130, y: 440, label: 'SG Highway, Ahmedabad' };
+const DROP_POS = { x: 390, y: 140, label: 'Vastrapur Lake, Ahmedabad' };
 let captainPos = { x: 90, y: 520, angle: 0 };
 let currentTarget = null;
 let animationProgress = 0;
@@ -162,11 +162,11 @@ function drawMap() {
   // Draw Moving Holido Captain Bike
   drawBike(captainPos.x, captainPos.y);
 
-  // Labels
+  // Labels (Ahmedabad Service Zone)
   ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
   ctx.fillStyle = '#AAA';
-  ctx.fillText('India Gate (Pickup)', PICKUP_POS.x - 45, PICKUP_POS.y + 24);
-  ctx.fillText('Connaught Place (Drop)', DROP_POS.x - 55, DROP_POS.y - 14);
+  ctx.fillText('SG Highway (Pickup)', PICKUP_POS.x - 45, PICKUP_POS.y + 24);
+  ctx.fillText('Vastrapur Lake (Drop)', DROP_POS.x - 55, DROP_POS.y - 14);
 }
 
 function drawPin(x, y, color, text) {
@@ -536,6 +536,153 @@ function selectCustomerPayment(id, icon, name, sub) {
   setToast(`Payment method set to: ${name}${convFee > 0 ? ` (+₹${convFee.toFixed(2)} fee)` : ''}`);
 }
 
+// ================= ALL-INDIA EXPANSION & GEO-FENCING CITY CHECK =================
+
+function getAdminActiveCities() {
+  try {
+    const raw = localStorage.getItem('holido_city_config');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('Could not read city config from storage:', e);
+  }
+  return [
+    { id: 'CITY-AMD', name: 'Ahmedabad', state: 'Gujarat', status: 'ACTIVE' },
+    { id: 'CITY-SRT', name: 'Surat', state: 'Gujarat', status: 'COMING_SOON' },
+    { id: 'CITY-BRD', name: 'Vadodara', state: 'Gujarat', status: 'COMING_SOON' },
+    { id: 'CITY-RJK', name: 'Rajkot', state: 'Gujarat', status: 'COMING_SOON' },
+    { id: 'CITY-BOM', name: 'Mumbai', state: 'Maharashtra', status: 'COMING_SOON' },
+    { id: 'CITY-DEL', name: 'Delhi NCR', state: 'Delhi', status: 'COMING_SOON' },
+    { id: 'CITY-BLR', name: 'Bengaluru', state: 'Karnataka', status: 'COMING_SOON' }
+  ];
+}
+
+function checkServiceableLocations() {
+  const pickupInput = document.getElementById('pickupAddr');
+  const dropInput = document.getElementById('dropAddr');
+  if (!pickupInput || !dropInput) return true;
+
+  const pickup = pickupInput.value.trim().toLowerCase();
+  const drop = dropInput.value.trim().toLowerCase();
+  const combined = `${pickup} ${drop}`;
+
+  const cities = getAdminActiveCities();
+  const activeCities = cities.filter(c => c.status === 'ACTIVE');
+
+  // List of major Indian cities for geo-fencing checks
+  const knownCities = [
+    { key: 'surat', name: 'Surat, Gujarat' },
+    { key: 'vadodara', name: 'Vadodara, Gujarat' },
+    { key: 'baroda', name: 'Vadodara, Gujarat' },
+    { key: 'rajkot', name: 'Rajkot, Gujarat' },
+    { key: 'mumbai', name: 'Mumbai, Maharashtra' },
+    { key: 'bombay', name: 'Mumbai, Maharashtra' },
+    { key: 'pune', name: 'Pune, Maharashtra' },
+    { key: 'delhi', name: 'Delhi NCR' },
+    { key: 'noida', name: 'Noida, NCR' },
+    { key: 'gurgaon', name: 'Gurugram, NCR' },
+    { key: 'bengaluru', name: 'Bengaluru, Karnataka' },
+    { key: 'bangalore', name: 'Bengaluru, Karnataka' },
+    { key: 'jaipur', name: 'Jaipur, Rajasthan' },
+    { key: 'kolkata', name: 'Kolkata, West Bengal' },
+    { key: 'hyderabad', name: 'Hyderabad, Telangana' },
+    { key: 'chennai', name: 'Chennai, Tamil Nadu' }
+  ];
+
+  let detectedUnserved = null;
+  for (const kc of knownCities) {
+    if (combined.includes(kc.key)) {
+      // Is this city currently ACTIVE in admin config?
+      const isActive = activeCities.some(ac => ac.name.toLowerCase().includes(kc.key));
+      if (!isActive) {
+        detectedUnserved = kc.name;
+        break;
+      }
+    }
+  }
+
+  // Check if location matches ANY active city (e.g. Ahmedabad)
+  const matchesAnyActive = activeCities.some(ac => 
+    combined.includes(ac.name.toLowerCase()) || 
+    pickup.includes('ahmedabad') || 
+    drop.includes('ahmedabad') ||
+    pickup.includes('sg highway') ||
+    drop.includes('sg highway') ||
+    pickup.includes('navrangpura') ||
+    drop.includes('navrangpura') ||
+    pickup.includes('vastrapur') ||
+    drop.includes('vastrapur')
+  );
+
+  const comingSoonBanner = document.getElementById('comingSoonBanner');
+  const activeCityBanner = document.getElementById('activeCityBanner');
+  const btnBook = document.getElementById('btnBookRide');
+
+  if (detectedUnserved || (!matchesAnyActive && (pickup.length > 3 || drop.length > 3))) {
+    const unservedName = detectedUnserved || (drop.length > 3 ? dropInput.value : pickupInput.value);
+    const shortName = unservedName.split(',')[0].trim();
+
+    if (comingSoonBanner) {
+      comingSoonBanner.classList.remove('hidden');
+      const cityNameEl = document.getElementById('comingSoonCityName');
+      const cityRefEl = document.getElementById('comingSoonCityRef');
+      if (cityNameEl) cityNameEl.innerText = shortName;
+      if (cityRefEl) cityRefEl.innerText = shortName;
+    }
+    if (activeCityBanner) {
+      activeCityBanner.style.display = 'none';
+    }
+    if (btnBook) {
+      btnBook.disabled = true;
+      btnBook.innerText = `SERVICE UNAVAILABLE IN ${shortName.toUpperCase()} (COMING SOON)`;
+      btnBook.style.background = '#94A3B8';
+      btnBook.style.boxShadow = 'none';
+    }
+    return false;
+  } else {
+    if (comingSoonBanner) {
+      comingSoonBanner.classList.add('hidden');
+    }
+    if (activeCityBanner) {
+      activeCityBanner.style.display = 'flex';
+    }
+    if (btnBook) {
+      btnBook.disabled = false;
+      btnBook.style.background = '#006FD4';
+      btnBook.style.boxShadow = '';
+    }
+    updateFare();
+    return true;
+  }
+}
+
+function setQuickLocation(pickup, drop) {
+  const pInput = document.getElementById('pickupAddr');
+  const dInput = document.getElementById('dropAddr');
+  if (pInput) pInput.value = pickup;
+  if (dInput) dInput.value = drop;
+
+  // Update active chips
+  const chips = document.querySelectorAll('.quick-loc-chips .loc-chip');
+  chips.forEach(c => c.classList.remove('active'));
+  if (window.event && window.event.target && window.event.target.classList.contains('loc-chip')) {
+    window.event.target.classList.add('active');
+  }
+
+  checkServiceableLocations();
+}
+
+function resetToAhmedabadLocations() {
+  setQuickLocation('SG Highway, Ahmedabad, Gujarat', 'Vastrapur Lake, Ahmedabad, Gujarat');
+}
+
+function joinCityWaitlist() {
+  const cityName = document.getElementById('comingSoonCityName') ? document.getElementById('comingSoonCityName').innerText : 'your city';
+  alert(`🎉 YOU'RE ON THE WAITLIST FOR ${cityName.toUpperCase()}!\n\nThank you for choosing Holido! We are scaling our Captain network in ${cityName} rapidly.\n\n🎁 You've earned ₹50 Free Ride Credit for Day 1 of our official launch in ${cityName}. We will notify you via SMS!`);
+}
+
 function selectService(service) {
   currentService = service;
   const isBike = service === 'BIKE_TAXI';
@@ -783,6 +930,9 @@ function customerRequestRide() {
     parcelDetailsText = `${selectedParcelCategory} (${weightLabel})`;
   }
 
+  const pickupVal = document.getElementById('pickupAddr') ? document.getElementById('pickupAddr').value : 'SG Highway, Ahmedabad, Gujarat';
+  const dropVal = document.getElementById('dropAddr') ? document.getElementById('dropAddr').value : 'Vastrapur Lake, Ahmedabad, Gujarat';
+
   activeRide = {
     id: 'ride-' + Math.floor(Math.random() * 8999 + 1000),
     serviceType: currentService,
@@ -793,6 +943,8 @@ function customerRequestRide() {
     fare: fareVal,
     earning: earningVal,
     payment: { ...selectedPaymentMethod },
+    pickup: pickupVal,
+    drop: dropVal,
     parcelCategory: selectedParcelCategory,
     parcelWeight: weight,
     parcelDetails: parcelDetailsText
@@ -839,6 +991,11 @@ function triggerIncomingCaptainAlert() {
   }
   document.getElementById('offerBadge').innerText = offerTitle;
   document.getElementById('offerEarning').innerText = `Earn ₹${activeRide.earning}`;
+
+  const offerP = document.getElementById('offerPickup');
+  const offerD = document.getElementById('offerDrop');
+  if (offerP && activeRide.pickup) offerP.innerText = activeRide.pickup;
+  if (offerD && activeRide.drop) offerD.innerText = activeRide.drop;
 
   const offerPay = document.getElementById('offerPayMode');
   if (offerPay && activeRide && activeRide.payment) {
@@ -1157,11 +1314,16 @@ function triggerAutoDemo() {
 
 // Start
 initMap();
+checkServiceableLocations();
 
-// Listen for pricing changes from Admin Command Center
+// Listen for pricing & city changes from Admin Command Center
 window.addEventListener('storage', (e) => {
   if (e.key === 'holido_pricing_config') {
     updateFare();
     setToast('⚡ Live Pricing & Surge updated from Super Admin Center!');
+  }
+  if (e.key === 'holido_city_config') {
+    checkServiceableLocations();
+    setToast('📍 City Service Zones updated from Super Admin Center!');
   }
 });

@@ -10,7 +10,7 @@ const MOCK_CAPTAINS = [
     category: 'BIKE',
     icon: '🏍️',
     vehicle: 'Hero Splendor Plus',
-    plate: 'DL 01 AB 4592',
+    plate: 'GJ 01 AB 4592',
     rating: '4.88 ★',
     todayEarnings: '₹840 (7 trips)',
     rawEarnings: 840,
@@ -18,14 +18,14 @@ const MOCK_CAPTAINS = [
     kyc: 'VERIFIED',
     status: 'ON TRIP',
     bloodGroup: 'B+',
-    dlNumber: 'DL-0420180094592',
+    dlNumber: 'GJ-0120180094592',
     dlExpiry: '13-08-2036 (ACTIVE)',
-    rcNumber: 'DL 01 AB 4592',
-    rcModel: 'HERO MOTOCORP - SPLENDOR PLUS BS-VI',
+    rcNumber: 'GJ 01 AB 4592',
+    rcModel: 'HERO MOTOCORP - SPLENDOR PLUS BS-VI (AHMEDABAD RTO)',
     insurance: 'TATA AIG (Valid till 2028-11-20)',
     puc: 'PASS (Valid till 2027-05-10)',
     aadhar: 'XXXX - XXXX - 4592',
-    address: 'Flat 402, Block C, Rohini Sector 8, New Delhi',
+    address: 'Flat 402, Block C, Navrangpura, Ahmedabad, Gujarat',
     bankName: 'State Bank of India (SBI)',
     accountNo: 'XXXXXX8819',
     ifsc: 'SBIN0004210',
@@ -41,7 +41,7 @@ const MOCK_CAPTAINS = [
     category: 'CAR',
     icon: '🚗',
     vehicle: 'Maruti Suzuki Dzire AC',
-    plate: 'DL 02 C 6190',
+    plate: 'GJ 27 CZ 8812',
     rating: '4.92 ★',
     todayEarnings: '₹620 (5 trips)',
     rawEarnings: 620,
@@ -49,14 +49,14 @@ const MOCK_CAPTAINS = [
     kyc: 'VERIFIED',
     status: 'ONLINE',
     bloodGroup: 'O+',
-    dlNumber: 'DL-0120190038812',
+    dlNumber: 'GJ-2720190038812',
     dlExpiry: '22-04-2038 (ACTIVE)',
-    rcNumber: 'DL 04 CZ 8812',
-    rcModel: 'HONDA MOTORCYCLE - ACTIVA 6G (GREY)',
+    rcNumber: 'GJ 27 CZ 8812',
+    rcModel: 'MARUTI SUZUKI - DZIRE VXI (AHMEDABAD EAST RTO)',
     insurance: 'ICICI LOMBARD (Valid till 2029-02-14)',
     puc: 'PASS (Valid till 2027-08-19)',
     aadhar: 'XXXX - XXXX - 8812',
-    address: 'H-12, Lajpat Nagar Part 2, New Delhi',
+    address: 'H-12, SG Highway, Vastrapur, Ahmedabad, Gujarat',
     bankName: 'HDFC Bank',
     accountNo: 'XXXXXX4421',
     ifsc: 'HDFC0001204',
@@ -72,7 +72,7 @@ const MOCK_CAPTAINS = [
     category: 'BIKE',
     icon: '🏍️',
     vehicle: 'Bajaj Pulsar 150',
-    plate: 'DL 03 BK 1109',
+    plate: 'GJ 01 BK 1109',
     rating: '4.75 ★',
     todayEarnings: '₹1,150 (9 trips)',
     rawEarnings: 1150,
@@ -80,14 +80,14 @@ const MOCK_CAPTAINS = [
     kyc: 'VERIFIED',
     status: 'ON TRIP',
     bloodGroup: 'A+',
-    dlNumber: 'DL-0320160011109',
+    dlNumber: 'GJ-0120160011109',
     dlExpiry: '11-10-2034 (ACTIVE)',
-    rcNumber: 'DL 03 BK 1109',
-    rcModel: 'BAJAJ AUTO - PULSAR 150 (NEON BLUE)',
+    rcNumber: 'GJ 01 BK 1109',
+    rcModel: 'BAJAJ AUTO - PULSAR 150 (AHMEDABAD RTO)',
     insurance: 'BAJAJ ALLIANZ (Valid till 2027-12-05)',
     puc: 'PASS (Valid till 2027-02-28)',
     aadhar: 'XXXX - XXXX - 1109',
-    address: 'B-34, Pocket 1, Mayur Vihar Phase 1, Delhi',
+    address: 'B-34, Maninagar East, Ahmedabad, Gujarat',
     bankName: 'Punjab National Bank (PNB)',
     accountNo: 'XXXXXX9902',
     ifsc: 'PUNB0140200',
@@ -103,7 +103,7 @@ const MOCK_CAPTAINS = [
     category: 'AUTO',
     icon: '🛺',
     vehicle: 'Bajaj RE Compact Auto',
-    plate: 'DL 1R B 7821',
+    plate: 'GJ 01 DL 2045',
     rating: '4.81 ★',
     todayEarnings: '₹450 (4 trips)',
     rawEarnings: 450,
@@ -111,13 +111,14 @@ const MOCK_CAPTAINS = [
     kyc: 'PENDING RC',
     status: 'ONLINE',
     bloodGroup: 'AB+',
-    dlNumber: 'DL-0820210067210',
+    dlNumber: 'GJ-0120200012045',
     dlExpiry: '04-09-2041 (ACTIVE)',
-    rcNumber: 'DL 08 EF 6721',
-    rcModel: 'TVS MOTOR - JUPITER 110 (WHITE)',
+    rcNumber: 'GJ 01 DL 2045',
+    rcModel: 'BAJAJ AUTO - RE COMPACT (AHMEDABAD RTO)',
     insurance: 'DIGIT INSURANCE (Pending Verification)',
     puc: 'PASS (Valid till 2026-12-30)',
     aadhar: 'XXXX - XXXX - 6721',
+    address: 'B-10, Prahlad Nagar, Satellite, Ahmedabad, Gujarat',
     address: 'Shop 4, Sector 18 Market, Noida, UP',
     bankName: 'Axis Bank',
     accountNo: 'XXXXXX3310',
@@ -471,7 +472,7 @@ function updateCommission(val) {
 // SIDEBAR NAVIGATION SWITCHER
 function switchNavTab(tabName) {
   try {
-    const tabs = ['overview', 'trips', 'captains', 'rider-payments', 'pricing', 'revenue', 'payment', 'team', 'logs', 'reviews', 'profile'];
+    const tabs = ['overview', 'trips', 'captains', 'rider-payments', 'pricing', 'locations', 'revenue', 'payment', 'team', 'logs', 'reviews', 'profile'];
 
     tabs.forEach((tab) => {
       const navBtn = document.getElementById(`nav-${tab}`);
@@ -497,6 +498,9 @@ function switchNavTab(tabName) {
     }
     if (tabName === 'pricing') {
       try { loadAdminPricingConfig(); } catch (e) { console.warn('loadAdminPricingConfig error:', e); }
+    }
+    if (tabName === 'locations') {
+      try { renderCityLocationsTable(); } catch (e) { console.warn('renderCityLocationsTable error:', e); }
     }
     if (tabName === 'team') {
       try { renderTeamTable(); } catch (e) { console.warn('renderTeamTable error:', e); }
@@ -1025,6 +1029,371 @@ function saveRules() {
   saveGeoHexZones();
   savePlatformAccessFee();
   savePaymentConvenienceFees();
+}
+
+// ================= ALL-INDIA CITY GEO-FENCING & SERVICE PERMISSION CONTROLS =================
+
+let ADMIN_CITIES = [
+  {
+    id: 'CITY-AMD',
+    name: 'Ahmedabad',
+    state: 'Gujarat',
+    status: 'ACTIVE',
+    services: ['BIKE', 'AUTO', 'CAR', 'PARCEL'],
+    radiusKm: 35,
+    centerLat: 23.0225,
+    centerLng: 72.5714,
+    activeCaptains: 42,
+    waitlistCount: 0,
+    launchDate: '2026-01-15 (LIVE NOW)'
+  },
+  {
+    id: 'CITY-SRT',
+    name: 'Surat',
+    state: 'Gujarat',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'PARCEL'],
+    radiusKm: 25,
+    centerLat: 21.1702,
+    centerLng: 72.8311,
+    activeCaptains: 0,
+    waitlistCount: 486,
+    launchDate: 'Phase 2 (Q1 2027)'
+  },
+  {
+    id: 'CITY-BRD',
+    name: 'Vadodara',
+    state: 'Gujarat',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'CAR', 'PARCEL'],
+    radiusKm: 20,
+    centerLat: 22.3072,
+    centerLng: 73.1812,
+    activeCaptains: 0,
+    waitlistCount: 312,
+    launchDate: 'Phase 2 (Q1 2027)'
+  },
+  {
+    id: 'CITY-RJK',
+    name: 'Rajkot',
+    state: 'Gujarat',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'PARCEL'],
+    radiusKm: 20,
+    centerLat: 22.3039,
+    centerLng: 70.8022,
+    activeCaptains: 0,
+    waitlistCount: 228,
+    launchDate: 'Phase 2 (Q2 2027)'
+  },
+  {
+    id: 'CITY-BOM',
+    name: 'Mumbai',
+    state: 'Maharashtra',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'CAR', 'PARCEL'],
+    radiusKm: 50,
+    centerLat: 19.0760,
+    centerLng: 72.8777,
+    activeCaptains: 0,
+    waitlistCount: 1850,
+    launchDate: 'Phase 3 (Expansion)'
+  },
+  {
+    id: 'CITY-DEL',
+    name: 'Delhi NCR',
+    state: 'Delhi',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'CAR', 'PARCEL'],
+    radiusKm: 60,
+    centerLat: 28.6139,
+    centerLng: 77.2090,
+    activeCaptains: 0,
+    waitlistCount: 2410,
+    launchDate: 'Phase 3 (Expansion)'
+  },
+  {
+    id: 'CITY-BLR',
+    name: 'Bengaluru',
+    state: 'Karnataka',
+    status: 'COMING_SOON',
+    services: ['BIKE', 'AUTO', 'CAR', 'PARCEL'],
+    radiusKm: 45,
+    centerLat: 12.9716,
+    centerLng: 77.5946,
+    activeCaptains: 0,
+    waitlistCount: 1670,
+    launchDate: 'Phase 3 (Expansion)'
+  }
+];
+
+let currentCityFilter = 'ALL';
+let currentCitySearch = '';
+
+function loadAdminCitiesConfig() {
+  try {
+    const raw = localStorage.getItem('holido_city_config');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        ADMIN_CITIES = parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading cities config from storage:', e);
+  }
+}
+
+function syncAdminCitiesConfig() {
+  try {
+    localStorage.setItem('holido_city_config', JSON.stringify(ADMIN_CITIES));
+  } catch (e) {
+    console.warn('Error saving cities config to storage:', e);
+  }
+}
+
+function renderCityLocationsTable(filter = currentCityFilter) {
+  loadAdminCitiesConfig();
+  const tbody = document.getElementById('cityLocationsTableBody');
+  if (!tbody) return;
+
+  currentCityFilter = filter;
+  const q = currentCitySearch.toLowerCase().trim();
+
+  // Filter list
+  const filtered = ADMIN_CITIES.filter(c => {
+    const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.state.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
+    let matchesCat = true;
+    if (filter === 'ACTIVE') matchesCat = c.status === 'ACTIVE';
+    else if (filter === 'COMING_SOON') matchesCat = c.status === 'COMING_SOON';
+    else if (filter === 'GUJARAT') matchesCat = c.state === 'Gujarat';
+    return matchesSearch && matchesCat;
+  });
+
+  // Update KPI counters
+  const activeCount = ADMIN_CITIES.filter(c => c.status === 'ACTIVE').length;
+  const comingCount = ADMIN_CITIES.filter(c => c.status === 'COMING_SOON').length;
+  const totalWaitlist = ADMIN_CITIES.reduce((sum, c) => sum + (c.waitlistCount || 0), 0);
+
+  const kpiAct = document.getElementById('kpiActiveCities');
+  const kpiCom = document.getElementById('kpiComingSoonCities');
+  const kpiWait = document.getElementById('kpiWaitlistRiders');
+  const badge = document.getElementById('cityCountBadge');
+
+  if (kpiAct) kpiAct.innerText = `${activeCount} ${activeCount === 1 ? 'City' : 'Cities'}`;
+  if (kpiCom) kpiCom.innerText = `${comingCount} Cities`;
+  if (kpiWait) kpiWait.innerText = `${totalWaitlist.toLocaleString('en-IN')} Users`;
+  if (badge) badge.innerText = `${ADMIN_CITIES.length} CITIES CONFIGURED`;
+
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:#64748B;">No cities match the current filter.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const isActive = c.status === 'ACTIVE';
+    const isGujarat = c.state === 'Gujarat';
+
+    const serviceBadges = (c.services || ['BIKE', 'AUTO', 'CAR', 'PARCEL']).map(s => {
+      const icon = s === 'BIKE' ? '🏍️' : (s === 'AUTO' ? '🛺' : (s === 'CAR' ? '🚗' : '📦'));
+      return `<span style="font-size:10.5px; background:#F1F5F9; border:1px solid #E2E8F0; padding:2px 6px; border-radius:4px; font-weight:700;">${icon} ${s}</span>`;
+    }).join(' ');
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div>
+            <div style="font-weight:800; font-size:13.5px; color:#0F172A;">
+              ${c.name} ${isGujarat ? '<span style="font-size:10px; background:#FEF3C7; color:#92400E; padding:1px 6px; border-radius:4px; font-weight:bold;">🦁 GUJARAT</span>' : ''}
+            </div>
+            <div style="font-size:11px; color:#64748B;">${c.state} • ID: ${c.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-weight:700; color:#006FD4; font-size:12.5px;">${c.radiusKm} km</span></td>
+      <td><div style="display:flex; gap:4px; flex-wrap:wrap;">${serviceBadges}</div></td>
+      <td>
+        <span style="font-weight:800; color:${isActive ? '#059669' : '#64748B'}; font-size:12.5px;">
+          ${isActive ? `🟢 ${c.activeCaptains} Online` : '0 (Unlaunched)'}
+        </span>
+      </td>
+      <td>
+        <span style="font-weight:700; color:${c.waitlistCount > 0 ? '#D97706' : '#64748B'}; font-size:12px;">
+          ${c.waitlistCount > 0 ? `🔔 ${c.waitlistCount} waiting` : '—'}
+        </span>
+      </td>
+      <td>
+        <span class="badge-status ${isActive ? 'verified' : 'assigned'}" style="font-size:11px;">
+          ${isActive ? '🟢 ACTIVE (LIVE)' : '🟡 COMING SOON'}
+        </span>
+      </td>
+      <td style="text-align:center;">
+        <label style="position:relative; display:inline-block; width:44px; height:24px; vertical-align:middle; cursor:pointer;">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleCityStatus('${c.id}')" style="opacity:0; width:0; height:0;">
+          <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:${isActive ? '#10B981' : '#CBD5E1'}; transition:.3s; border-radius:24px;"></span>
+          <span style="position:absolute; content:''; height:18px; width:18px; left:${isActive ? '22px' : '3px'}; bottom:3px; background:white; transition:.3s; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></span>
+        </label>
+        <div style="font-size:10px; color:${isActive ? '#059669' : '#64748B'}; font-weight:bold; margin-top:2px;">
+          ${isActive ? 'DISPATCH ON' : 'WAITLIST ONLY'}
+        </div>
+      </td>
+      <td style="text-align:right;">
+        <div style="display:flex; justify-content:flex-end; gap:6px;">
+          <button class="btn-action-edit" onclick="openEditCityModal('${c.id}')" title="Edit City Details">✏️ Edit</button>
+          ${c.id !== 'CITY-AMD' ? `<button class="btn-action-reject" onclick="deleteCity('${c.id}')" title="Remove City">🗑️</button>` : ''}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterCityCategory(cat) {
+  ['ALL', 'ACTIVE', 'COMING_SOON', 'GUJARAT'].forEach(k => {
+    const btn = document.getElementById(`cf-${k}`);
+    if (btn) btn.classList.toggle('active', k === cat);
+  });
+  renderCityLocationsTable(cat);
+}
+
+function filterCityTable(query) {
+  currentCitySearch = query;
+  renderCityLocationsTable(currentCityFilter);
+}
+
+function toggleCityStatus(cityId) {
+  const city = ADMIN_CITIES.find(c => c.id === cityId);
+  if (!city) return;
+
+  const newStatus = city.status === 'ACTIVE' ? 'COMING_SOON' : 'ACTIVE';
+  city.status = newStatus;
+  if (newStatus === 'ACTIVE' && city.activeCaptains === 0) {
+    city.activeCaptains = 12; // Initial seed captains for simulation
+  }
+
+  syncAdminCitiesConfig();
+  renderCityLocationsTable(currentCityFilter);
+
+  const statusMsg = newStatus === 'ACTIVE' 
+    ? `🟢 LIVE DISPATCH ENABLED: ${city.name}, ${city.state} is now 100% active! Riders in this city can now book rides immediately.`
+    : `🟡 WAITLIST MODE ENABLED: ${city.name}, ${city.state} is now in "We Are Coming Soon" mode. Riders will be prompted to join the waitlist.`;
+
+  alert(`📍 CITY PERMISSION UPDATED!\n\n${statusMsg}`);
+}
+
+function openAddCityModal() {
+  document.getElementById('cityModalTitle').innerText = '➕ Add New City / Service Zone';
+  document.getElementById('editCityId').value = '';
+  document.getElementById('modalCityName').value = '';
+  document.getElementById('modalCityState').value = 'Gujarat';
+  document.getElementById('modalCityStatus').value = 'COMING_SOON';
+  document.getElementById('modalCityRadius').value = '30';
+  document.getElementById('svcBike').checked = true;
+  document.getElementById('svcAuto').checked = true;
+  document.getElementById('svcCar').checked = true;
+  document.getElementById('svcParcel').checked = true;
+
+  document.getElementById('cityModal').classList.remove('hidden');
+}
+
+function openEditCityModal(cityId) {
+  const city = ADMIN_CITIES.find(c => c.id === cityId);
+  if (!city) return;
+
+  document.getElementById('cityModalTitle').innerText = `✏️ Edit Service Zone: ${city.name} (${city.state})`;
+  document.getElementById('editCityId').value = city.id;
+  document.getElementById('modalCityName').value = city.name;
+  document.getElementById('modalCityState').value = city.state;
+  document.getElementById('modalCityStatus').value = city.status;
+  document.getElementById('modalCityRadius').value = city.radiusKm;
+
+  const services = city.services || ['BIKE', 'AUTO', 'CAR', 'PARCEL'];
+  document.getElementById('svcBike').checked = services.includes('BIKE');
+  document.getElementById('svcAuto').checked = services.includes('AUTO');
+  document.getElementById('svcCar').checked = services.includes('CAR');
+  document.getElementById('svcParcel').checked = services.includes('PARCEL');
+
+  document.getElementById('cityModal').classList.remove('hidden');
+}
+
+function saveCityModalData() {
+  const cityId = document.getElementById('editCityId').value;
+  const name = document.getElementById('modalCityName').value.trim();
+  const state = document.getElementById('modalCityState').value.trim();
+  const status = document.getElementById('modalCityStatus').value;
+  const radiusKm = parseInt(document.getElementById('modalCityRadius').value, 10) || 30;
+
+  if (!name) {
+    alert('Please enter a City Name (e.g. Surat, Vadodara, Mumbai)');
+    return;
+  }
+
+  const services = [];
+  if (document.getElementById('svcBike').checked) services.push('BIKE');
+  if (document.getElementById('svcAuto').checked) services.push('AUTO');
+  if (document.getElementById('svcCar').checked) services.push('CAR');
+  if (document.getElementById('svcParcel').checked) services.push('PARCEL');
+
+  if (services.length === 0) {
+    alert('Please enable at least one service (Bike, Auto, Car, or Parcel)');
+    return;
+  }
+
+  if (cityId) {
+    // Update existing
+    const existing = ADMIN_CITIES.find(c => c.id === cityId);
+    if (existing) {
+      existing.name = name;
+      existing.state = state;
+      existing.status = status;
+      existing.radiusKm = radiusKm;
+      existing.services = services;
+    }
+  } else {
+    // Create new
+    const newId = `CITY-${name.slice(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+    ADMIN_CITIES.push({
+      id: newId,
+      name,
+      state: state || 'Gujarat',
+      status,
+      services,
+      radiusKm,
+      centerLat: 23.0000,
+      centerLng: 72.0000,
+      activeCaptains: status === 'ACTIVE' ? 10 : 0,
+      waitlistCount: 0,
+      launchDate: status === 'ACTIVE' ? 'LIVE NOW' : 'Expansion Target'
+    });
+  }
+
+  syncAdminCitiesConfig();
+  renderCityLocationsTable(currentCityFilter);
+  closeModal('cityModal');
+
+  alert(`✅ CITY ZONE SAVED!\n\nCity: ${name} (${state})\nStatus: ${status === 'ACTIVE' ? '🟢 ACTIVE (LIVE)' : '🟡 COMING SOON'}\nServices: ${services.join(', ')}\nGeo-Fence Radius: ${radiusKm} km\n\nAll customer mobile apps now synchronize with this configuration!`);
+}
+
+function deleteCity(cityId) {
+  const city = ADMIN_CITIES.find(c => c.id === cityId);
+  if (!city) return;
+
+  if (city.id === 'CITY-AMD') {
+    alert('Ahmedabad is the primary pilot launch hub and cannot be removed.');
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to remove ${city.name} (${city.state}) from the service zones?`)) {
+    return;
+  }
+
+  ADMIN_CITIES = ADMIN_CITIES.filter(c => c.id !== cityId);
+  syncAdminCitiesConfig();
+  renderCityLocationsTable(currentCityFilter);
+  alert(`🗑️ ${city.name} has been removed from service zones.`);
 }
 
 // ================= TEAM & RBAC PERMISSIONS =================
@@ -2088,6 +2457,7 @@ function initAdminApp() {
   try { renderTrips(); } catch (e) { console.warn('renderTrips init:', e); }
   try { renderCaptains(); } catch (e) { console.warn('renderCaptains init:', e); }
   try { renderRiderPaymentsTable(); } catch (e) { console.warn('renderRiderPaymentsTable init:', e); }
+  try { renderCityLocationsTable(); } catch (e) { console.warn('renderCityLocationsTable init:', e); }
   try { renderTeamTable(); } catch (e) { console.warn('renderTeamTable init:', e); }
   try { renderAuditLogs(); } catch (e) { console.warn('renderAuditLogs init:', e); }
   try { renderReviewsTable(); } catch (e) { console.warn('renderReviewsTable init:', e); }

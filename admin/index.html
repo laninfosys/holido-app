@@ -40,6 +40,11 @@
           <span class="nav-icon">⚡</span>
           <span>Surge & 24h Daily Pass</span>
         </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-locations" onclick="switchNavTab('locations')">
+          <span class="nav-icon">📍</span>
+          <span>City Geo-Zones & Launch</span>
+          <span class="badge" style="background:#059669; font-weight:800;">AHMEDABAD LIVE</span>
+        </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-revenue" onclick="switchNavTab('revenue')">
           <span class="nav-icon">💰</span>
           <span>Revenue & Tuesday Payouts</span>
@@ -734,6 +739,97 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- ================= VIEW: CITY GEO-FENCING & SERVICE PERMISSION CONTROLS ================= -->
+      <div id="view-locations" class="view-section hidden">
+        <section class="tables-section" style="padding-top: 6px;">
+          <!-- TOP HEADER BANNER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h2 style="font-size:20px; font-weight:800; color:#0F172A; margin:0;">📍 City Geo-Fencing & Service Zone Permissions</h2>
+                <span class="badge-status verified" style="font-size:11px;">EXPANSION ENGINE: ALL-INDIA</span>
+              </div>
+              <p style="font-size:12.5px; color:#64748B; margin-top:3px;">
+                Initial operations live across <b>Gujarat (Ahmedabad)</b>. Enable or disable service permissions for cities across India. Unserved locations automatically show the "We are coming soon" waitlist prompt to riders.
+              </p>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+              <button class="btn-save-config" onclick="openAddCityModal()" style="margin:0; padding:10px 18px; font-size:13px; background:#006FD4;">
+                ➕ Add New City / Service Zone
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI STAT CARDS FOR LOCATIONS -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:20px;">
+            <div class="kpi-card" style="background:#FFFFFF; border:1.5px solid #10B981; padding:16px;">
+              <span class="kpi-title" style="color:#059669; font-size:10.5px; font-weight:bold;">ACTIVE LAUNCH CITIES</span>
+              <div class="kpi-value" style="color:#059669; font-size:22px; font-weight:900; margin-top:4px;" id="kpiActiveCities">1 City</div>
+              <div style="font-size:11px; color:#059669; margin-top:2px; font-weight:bold;">Ahmedabad, Gujarat (Live Dispatch)</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">EXPANSION PIPELINE</span>
+              <div class="kpi-value" style="color:#006FD4; font-size:22px; font-weight:900; margin-top:4px;" id="kpiComingSoonCities">6 Cities</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">Surat, Vadodara, Rajkot, Mumbai...</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">REGISTERED WAITLIST RIDERS</span>
+              <div class="kpi-value" style="color:#D97706; font-size:22px; font-weight:900; margin-top:4px;" id="kpiWaitlistRiders">6,956 Users</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">Requested service in unserved cities</div>
+            </div>
+
+            <div class="kpi-card" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:16px;">
+              <span class="kpi-title" style="color:#64748B; font-size:10.5px; font-weight:bold;">AHMEDABAD SERVICE RADIUS</span>
+              <div class="kpi-value" style="color:#042045; font-size:22px; font-weight:900; margin-top:4px;">35 km</div>
+              <div style="font-size:11px; color:#64748B; margin-top:2px;">Greater Ahmedabad & Gandhinagar</div>
+            </div>
+          </div>
+
+          <!-- CITY MANAGEMENT TABLE PANEL -->
+          <div class="panel" style="padding: 22px; border:1px solid #E2E8F0;">
+            <!-- SEARCH AND FILTER CONTROLS -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="text" id="searchCityInput" onkeyup="filterCityTable(this.value)" placeholder="🔍 Search City or State..." style="background:#F8FAFC; border:1.5px solid #CBD5E1; padding:9px 14px; border-radius:8px; font-size:12.5px; width:260px;">
+                <span class="badge-status verified" id="cityCountBadge" style="font-size:11.5px;">7 CITIES CONFIGURED</span>
+              </div>
+
+              <!-- FILTER PILLS -->
+              <div style="display:flex; gap:6px;">
+                <button class="pricing-tab-btn active" id="cf-ALL" onclick="filterCityCategory('ALL')" style="padding:6px 12px; font-size:11.5px;">All Cities (7)</button>
+                <button class="pricing-tab-btn" id="cf-ACTIVE" onclick="filterCityCategory('ACTIVE')" style="padding:6px 12px; font-size:11.5px;">🟢 Active Only (1)</button>
+                <button class="pricing-tab-btn" id="cf-COMING_SOON" onclick="filterCityCategory('COMING_SOON')" style="padding:6px 12px; font-size:11.5px;">🟡 Coming Soon (6)</button>
+                <button class="pricing-tab-btn" id="cf-GUJARAT" onclick="filterCityCategory('GUJARAT')" style="padding:6px 12px; font-size:11.5px;">🦁 Gujarat State</button>
+              </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CITY & STATE</th>
+                    <th>GEO RADIUS</th>
+                    <th>ALLOWED SERVICES</th>
+                    <th>ACTIVE FLEET</th>
+                    <th>WAITLIST</th>
+                    <th>SERVICE STATUS</th>
+                    <th style="text-align:center;">LIVE PERMISSION SWITCH</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="cityLocationsTableBody">
+                  <!-- Populated by renderCityLocationsTable() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
 
       <!-- ================= VIEW 5: REVENUE & TUESDAY PAYOUTS ================= -->
@@ -1638,6 +1734,68 @@
       <div class="modal-footer">
         <button class="btn-danger-outline" onclick="closeModal('adminSecurityModal')">Cancel</button>
         <button class="btn-save-config" onclick="saveSuperAdminCredentials()" style="margin:0; padding:10px 20px;">💾 Save New ID & Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT SERVICE CITY -->
+  <div id="cityModal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 id="cityModalTitle" style="font-size:16px; font-weight:800; color:#0F172A;">➕ Add New City / Service Zone</h3>
+        <button class="modal-close" onclick="closeModal('cityModal')">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px; display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" id="editCityId" value="">
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#64748B;">CITY NAME</label>
+            <input type="text" id="modalCityName" placeholder="e.g. Surat" style="width:100%; margin-top:4px; padding:10px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; font-weight:bold;">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#64748B;">STATE</label>
+            <input type="text" id="modalCityState" placeholder="e.g. Gujarat" value="Gujarat" style="width:100%; margin-top:4px; padding:10px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#64748B;">SERVICE STATUS</label>
+            <select id="modalCityStatus" style="width:100%; margin-top:4px; padding:10px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; font-weight:bold;">
+              <option value="ACTIVE">🟢 ACTIVE (Live Dispatch)</option>
+              <option value="COMING_SOON">🟡 COMING SOON (Waitlist Mode)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:bold; color:#64748B;">GEO RADIUS (KM)</label>
+            <input type="number" id="modalCityRadius" value="30" min="5" max="100" style="width:100%; margin-top:4px; padding:10px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:11px; font-weight:bold; color:#64748B; margin-bottom:6px; display:block;">ENABLED HOLIDO SERVICES IN THIS CITY</label>
+          <div style="display:flex; gap:14px; flex-wrap:wrap; background:#F8FAFC; padding:10px 14px; border-radius:8px; border:1px solid #E2E8F0;">
+            <label style="font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="svcBike" checked> 🏍️ Bike Taxi
+            </label>
+            <label style="font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="svcAuto" checked> 🛺 Auto Rickshaw
+            </label>
+            <label style="font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="svcCar" checked> 🚗 Cab / Car
+            </label>
+            <label style="font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="svcParcel" checked> 📦 Parcel Express
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding:16px 20px; display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-danger-outline" onclick="closeModal('cityModal')">Cancel</button>
+        <button class="btn-save-config" onclick="saveCityModalData()" style="margin:0; padding:10px 20px; background:#006FD4;">💾 Save City Zone</button>
       </div>
     </div>
   </div>
