@@ -42,11 +42,25 @@
         <div class="phone-screen" id="customerApp">
           <!-- Customer Header -->
           <div class="cust-header">
-            <div class="cust-brand-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div class="cust-brand-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
               <img src="assets/holido_logo.png" alt="Holido Logo" style="height: 38px; width: auto; max-width: 170px; object-fit: contain;">
               <span style="font-size: 10px; font-weight: 800; color: #006FD4; letter-spacing: 1px;">CUSTOMER</span>
             </div>
-            <div class="service-tabs">
+
+            <!-- Customer App Main Navigation: Book, My Trips, Profile -->
+            <div class="cust-nav-bar">
+              <button class="cnav-btn active" id="cnavBook" onclick="switchCustomerTab('BOOKING')">
+                <span>🚖</span> <span>Book Ride</span>
+              </button>
+              <button class="cnav-btn" id="cnavTrips" onclick="switchCustomerTab('TRIPS')">
+                <span>📜</span> <span>My Trips</span> <span id="cnavTripBadge" class="cnav-badge">2</span>
+              </button>
+              <button class="cnav-btn" id="cnavProfile" onclick="switchCustomerTab('PROFILE')">
+                <span>👤</span> <span>Profile</span>
+              </button>
+            </div>
+
+            <div class="service-tabs" id="custServiceTabsRow">
               <button class="tab-btn active" id="tabBike" onclick="selectService('BIKE_TAXI')">🚴 Bike Taxi</button>
               <button class="tab-btn" id="tabParcel" onclick="selectService('PARCEL_DELIVERY')">📦 Parcel</button>
             </div>
@@ -58,17 +72,47 @@
             <div class="location-card">
               <div class="loc-row">
                 <span class="loc-icon pickup">●</span>
-                <div class="loc-text" style="flex:1;">
+                <div class="loc-text loc-input-wrap" style="flex:1;">
                   <span class="loc-label">PICKUP LOCATION</span>
-                  <input type="text" id="pickupAddr" value="SG Highway, Ahmedabad, Gujarat" list="locationsList" oninput="checkServiceableLocations()" placeholder="Enter Pickup Landmark or Area in Ahmedabad">
+                  <input type="text" id="pickupAddr" value="SG Highway, Ahmedabad, Gujarat" oninput="handleLocationInput('pickup', this.value)" placeholder="Search landmark, street or GPS area..." autocomplete="off">
+                  <button type="button" class="btn-gps-loc" onclick="useCurrentGpsLocation()" title="Detect current GPS location">📍 GPS</button>
+                  <div id="pickupResultsDropdown" class="loc-dropdown hidden"></div>
                 </div>
               </div>
               <div class="loc-divider"></div>
               <div class="loc-row">
                 <span class="loc-icon drop">■</span>
-                <div class="loc-text" style="flex:1;">
+                <div class="loc-text loc-input-wrap" style="flex:1;">
                   <span class="loc-label">DESTINATION / DROP</span>
-                  <input type="text" id="dropAddr" value="Vastrapur Lake, Ahmedabad, Gujarat" list="locationsList" oninput="checkServiceableLocations()" placeholder="Enter Destination Area or City">
+                  <input type="text" id="dropAddr" value="Vastrapur Lake, Ahmedabad, Gujarat" oninput="handleLocationInput('drop', this.value)" placeholder="Search destination area or city in India..." autocomplete="off">
+                  <div id="dropResultsDropdown" class="loc-dropdown hidden"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DYNAMIC TRIP DISTANCE, DURATION & RATE METRICS CARD -->
+            <div id="tripDistanceCard" class="trip-distance-card">
+              <div class="dist-metric">
+                <span class="dist-icon">📏</span>
+                <div>
+                  <span class="dist-label">ESTIMATED DISTANCE</span>
+                  <span class="dist-val" id="displayTripKm">4.8 km</span>
+                </div>
+              </div>
+              <div class="dist-divider"></div>
+              <div class="dist-metric">
+                <span class="dist-icon">⏱️</span>
+                <div>
+                  <span class="dist-label">ESTIMATED TIME</span>
+                  <span class="dist-val" id="displayTripEta">12 mins</span>
+                </div>
+              </div>
+              <div class="dist-divider"></div>
+              <div class="dist-metric">
+                <span class="dist-icon">⚡</span>
+                <div>
+                  <span class="dist-label">BASE RATE</span>
+                  <span class="dist-val" id="displayRatePerKm">₹10/km</span>
                 </div>
               </div>
             </div>
@@ -411,6 +455,147 @@
             <button class="btn-skip-review" onclick="skipCustomerReview()">
               Skip for Now
             </button>
+          </div>
+
+          <!-- Screen 3: Customer Trip History View -->
+          <div id="custTripsView" class="view-panel hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h3 style="font-size:14px; font-weight:800; color:#0F172A;">📜 Past Trips & Receipts</h3>
+              <span id="tripsCountPill" style="font-size:10px; font-weight:bold; background:#EFF6FF; color:#006FD4; padding:2px 8px; border-radius:12px;">3 Trips</span>
+            </div>
+
+            <!-- Trip Filter Pills -->
+            <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px;">
+              <button class="pill active" onclick="filterTrips('ALL', this)" style="font-size:10.5px; padding:4px 8px;">All</button>
+              <button class="pill" onclick="filterTrips('BIKE', this)" style="font-size:10.5px; padding:4px 8px;">🏍️ Bike</button>
+              <button class="pill" onclick="filterTrips('AUTO', this)" style="font-size:10.5px; padding:4px 8px;">🛺 Auto</button>
+              <button class="pill" onclick="filterTrips('CAR', this)" style="font-size:10.5px; padding:4px 8px;">🚗 Cab</button>
+              <button class="pill" onclick="filterTrips('PARCEL', this)" style="font-size:10.5px; padding:4px 8px;">📦 Parcel</button>
+            </div>
+
+            <!-- Scrollable Trips List Container -->
+            <div id="customerTripsListContainer" class="trips-container">
+              <!-- Dynamically populated by renderCustomerTrips() -->
+            </div>
+          </div>
+
+          <!-- Screen 4: Customer Profile & Account View -->
+          <div id="custProfileView" class="view-panel hidden">
+            <!-- Profile Identity Card -->
+            <div class="profile-card">
+              <div class="profile-avatar-row">
+                <div class="cust-avatar-circle" id="profAvatarText">AK</div>
+                <div style="flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                      <h3 style="font-size:15px; font-weight:800; color:#0F172A;" id="profNameDisplay">Akshay Kumar</h3>
+                      <div style="font-size:11px; color:#64748B;" id="profPhoneDisplay">+91 98765 43210</div>
+                    </div>
+                    <button class="btn-invoice" onclick="openEditProfileModal()">✏️ Edit</button>
+                  </div>
+                  <div style="display:inline-flex; align-items:center; gap:4px; background:#FEF3C7; color:#92400E; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; margin-top:4px;">
+                    ⭐ Holido Gold Member • 4.95 ★
+                  </div>
+                </div>
+              </div>
+
+              <!-- Wallet & Coin Balances -->
+              <div class="wallet-badge-row">
+                <div class="wallet-box">
+                  <span class="label">WALLET BALANCE</span>
+                  <span class="val" id="profWalletBalance" style="color:#059669;">₹350.00</span>
+                </div>
+                <div class="wallet-box">
+                  <span class="label">HOLIDO COINS</span>
+                  <span class="val" id="profCoinsBalance" style="color:#D97706;">180 🪙</span>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px;">
+                <button type="button" onclick="addMoneyToWallet()" style="flex:1; padding:7px; font-size:11px; font-weight:700; background:#006FD4; color:#FFF; border:none; border-radius:8px; cursor:pointer;">
+                  + Add Money
+                </button>
+                <button type="button" onclick="setToast('🎟️ Promo Code HOLIDOFIRST applied! ₹50 OFF next ride.')" style="flex:1; padding:7px; font-size:11px; font-weight:700; background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; border-radius:8px; cursor:pointer;">
+                  🎟️ Apply Coupon
+                </button>
+              </div>
+            </div>
+
+            <!-- Saved Places (1-Click Ride Fast Booking) -->
+            <div class="profile-card">
+              <h4 style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px;">📍 Saved Favorite Places</h4>
+              <div class="saved-place-item">
+                <div>
+                  <b>🏠 Home</b>
+                  <div style="color:#64748B; font-size:10px;">Vastrapur Lake, Ahmedabad, Gujarat</div>
+                </div>
+                <button class="btn-book-quick" onclick="quickBookSavedPlace('Vastrapur Lake, Ahmedabad, Gujarat')">Book Ride</button>
+              </div>
+              <div class="saved-place-item">
+                <div>
+                  <b>🏢 Work / Office</b>
+                  <div style="color:#64748B; font-size:10px;">SG Highway, Ahmedabad, Gujarat</div>
+                </div>
+                <button class="btn-book-quick" onclick="quickBookSavedPlace('SG Highway, Ahmedabad, Gujarat')">Book Ride</button>
+              </div>
+            </div>
+
+            <!-- Safety SOS & Emergency Contacts -->
+            <div class="profile-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h4 style="font-size:12px; font-weight:800; color:#DC2626;">🚨 Emergency SOS Contacts</h4>
+                <span style="font-size:9.5px; background:#FEE2E2; color:#B91C1C; font-weight:bold; padding:2px 6px; border-radius:4px;">AUTO-ALERT ON</span>
+              </div>
+              <div style="font-size:11px; color:#334155; line-height:1.4;">
+                <div><b>Primary Contact:</b> <span id="profSosContact">Family (+91 98250 12345)</span></div>
+                <div><b>24x7 Safety Command Center:</b> 1800-HOLIDO-SAFE (Active)</div>
+              </div>
+            </div>
+
+            <!-- Switch Profile / Create New Rider -->
+            <div style="text-align:center; margin-top:8px;">
+              <button type="button" onclick="openCreateProfileModal()" style="background:#FFF; border:1.5px dashed #006FD4; color:#006FD4; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; width:100%;">
+                ➕ Create / Switch Customer Profile
+              </button>
+            </div>
+          </div>
+
+          <!-- Customer Tax Invoice Receipt Modal -->
+          <div id="custInvoiceModal" class="invoice-modal hidden">
+            <div class="invoice-paper" id="invoicePaperContent">
+              <!-- Rendered via viewTripInvoice(tripId) -->
+            </div>
+          </div>
+
+          <!-- Customer Edit Profile Modal -->
+          <div id="custEditProfileModal" class="invoice-modal hidden">
+            <div class="invoice-paper" style="max-width:340px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:900; color:#0F172A;">✏️ Edit Customer Profile</h3>
+                <button onclick="closeEditProfileModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
+                <div>
+                  <label style="font-weight:700; color:#475569; display:block; margin-bottom:4px;">Full Name:</label>
+                  <input type="text" id="editProfName" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:8px; font-size:12px;">
+                </div>
+                <div>
+                  <label style="font-weight:700; color:#475569; display:block; margin-bottom:4px;">Mobile Number:</label>
+                  <input type="tel" id="editProfPhone" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:8px; font-size:12px;">
+                </div>
+                <div>
+                  <label style="font-weight:700; color:#475569; display:block; margin-bottom:4px;">Email Address:</label>
+                  <input type="email" id="editProfEmail" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:8px; font-size:12px;">
+                </div>
+                <div>
+                  <label style="font-weight:700; color:#475569; display:block; margin-bottom:4px;">Emergency SOS Contact (Name & Phone):</label>
+                  <input type="text" id="editProfSos" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:8px; font-size:12px;">
+                </div>
+                <button type="button" onclick="saveCustomerProfile()" class="btn-primary" style="margin-top:8px;">
+                  Save Profile Changes
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1371,6 +1371,388 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 /* =========================================================
+   CUSTOMER TOP NAVIGATION (Book, My Trips, Profile)
+   ========================================================= */
+.cust-nav-bar {
+  display: flex;
+  background: #F1F5F9;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 10px;
+  border: 1px solid #E2E8F0;
+  gap: 2px;
+}
+
+.cnav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.cnav-btn.active {
+  background: #006FD4;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 111, 212, 0.25);
+}
+
+.cnav-badge {
+  background: #FF8100;
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 999px;
+  margin-left: 2px;
+}
+
+.cnav-btn.active .cnav-badge {
+  background: #FFFFFF;
+  color: #006FD4;
+}
+
+/* GPS DETECT BUTTON & REAL-TIME SEARCH */
+.loc-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.btn-gps-loc {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #006FD4;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.btn-gps-loc:hover {
+  background: #006FD4;
+  color: #FFF;
+}
+
+.loc-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1.5px solid #006FD4;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+  max-height: 190px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.loc-dropdown-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #F1F5F9;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #1E293B;
+  transition: background 0.15s;
+}
+
+.loc-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.loc-dropdown-item:hover {
+  background: #EFF6FF;
+}
+
+.loc-dropdown-item .icon {
+  font-size: 14px;
+  margin-top: 1px;
+}
+
+.loc-dropdown-item .sub {
+  font-size: 10px;
+  color: #64748B;
+  display: block;
+}
+
+/* REAL-TIME DISTANCE & DURATION ESTIMATION CARD */
+.trip-distance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #042045, #0A3A75);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(4, 32, 69, 0.15);
+  border: 1px solid #1E40AF;
+}
+
+.dist-metric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dist-icon {
+  font-size: 18px;
+}
+
+.dist-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  color: #93C5FD;
+  letter-spacing: 0.5px;
+}
+
+.dist-val {
+  display: block;
+  font-size: 14px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.dist-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* CUSTOMER TRIP HISTORY VIEW */
+.trips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.trip-card-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.trip-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #CBD5E1;
+}
+
+.trip-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 6px;
+}
+
+.trip-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.trip-status-pill {
+  font-size: 9.5px;
+  font-weight: 800;
+  background: #ECFDF5;
+  color: #059669;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.trip-route-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #334155;
+}
+
+.trip-route-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.trip-fare-txt {
+  font-size: 14px;
+  font-weight: 900;
+  color: #006FD4;
+}
+
+.btn-invoice {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-invoice:hover {
+  background: #EFF6FF;
+  border-color: #006FD4;
+  color: #006FD4;
+}
+
+/* CUSTOMER PROFILE VIEW */
+.profile-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cust-avatar-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #006FD4, #FF8100);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0, 111, 212, 0.25);
+}
+
+.wallet-badge-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.wallet-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.wallet-box .label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  display: block;
+}
+
+.wallet-box .val {
+  font-size: 16px;
+  font-weight: 900;
+  color: #042045;
+  margin-top: 2px;
+  display: block;
+}
+
+.saved-place-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.btn-book-quick {
+  background: #006FD4;
+  color: #FFF;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* TAX INVOICE RECEIPT MODAL */
+.invoice-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 16px;
+}
+
+.invoice-paper {
+  background: #FFFFFF;
+  border-radius: 16px;
+  max-width: 380px;
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  font-family: inherit;
+  color: #0F172A;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* =========================================================
    MOBILE RESPONSIVE & PWA SMARTPHONE OPTIMIZATION (< 860px)
    ========================================================= */
 @media (max-width: 860px) {

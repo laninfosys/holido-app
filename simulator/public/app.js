@@ -93,8 +93,13 @@ let countdownInterval = null;
 let bikeAnimationId = null;
 
 // Map Coordinates (Pixel based for 520x580 canvas) - Ahmedabad Pilot Hub
-const PICKUP_POS = { x: 130, y: 440, label: 'SG Highway, Ahmedabad' };
-const DROP_POS = { x: 390, y: 140, label: 'Vastrapur Lake, Ahmedabad' };
+let PICKUP_POS = { x: 130, y: 440, label: 'SG Highway, Ahmedabad' };
+let DROP_POS = { x: 390, y: 140, label: 'Vastrapur Lake, Ahmedabad' };
+let currentPickupCoords = { lat: 23.0338, lon: 72.5085, name: 'SG Highway, Ahmedabad, Gujarat' };
+let currentDropCoords = { lat: 23.0375, lon: 72.5310, name: 'Vastrapur Lake, Ahmedabad, Gujarat' };
+let currentTripDistanceKm = 4.8;
+let currentTripDurationMin = 12;
+
 let captainPos = { x: 90, y: 520, angle: 0 };
 let currentTarget = null;
 let animationProgress = 0;
@@ -664,6 +669,17 @@ function setQuickLocation(pickup, drop) {
   if (pInput) pInput.value = pickup;
   if (dInput) dInput.value = drop;
 
+  // Resolve coordinates from database if available
+  const pMatch = LOCAL_GEO_DATABASE.find(l => l.name.toLowerCase().includes(pickup.toLowerCase().split(',')[0])) || LOCAL_GEO_DATABASE[0];
+  const dMatch = LOCAL_GEO_DATABASE.find(l => l.name.toLowerCase().includes(drop.toLowerCase().split(',')[0])) || LOCAL_GEO_DATABASE[1];
+
+  currentPickupCoords = { lat: pMatch.lat, lon: pMatch.lon, name: pickup };
+  currentDropCoords = { lat: dMatch.lat, lon: dMatch.lon, name: drop };
+  PICKUP_POS.label = pickup;
+  DROP_POS.label = drop;
+
+  recalculateDistanceAndRoute();
+
   // Update active chips
   const chips = document.querySelectorAll('.quick-loc-chips .loc-chip');
   chips.forEach(c => c.classList.remove('active'));
@@ -672,6 +688,9 @@ function setQuickLocation(pickup, drop) {
   }
 
   checkServiceableLocations();
+  updateFare();
+  drawMap();
+  drawCustMiniMap();
 }
 
 function resetToAhmedabadLocations() {
@@ -771,16 +790,17 @@ function updateFare() {
     });
   }
 
-  // Helper to calculate total for any vehicle
+  // Helper to calculate total for any vehicle with REAL DYNAMIC DISTANCE
   function calcVehicleTotal(vType) {
     const v = VEHICLE_DATA[vType];
     const base = v.baseFare;
-    const dist = Math.round(1.7 * v.perKmRate); // 3.2km trip (first 1.5km included in base, 1.7km chargeable)
+    const chargeableKm = Math.max(0, currentTripDistanceKm - 1.5);
+    const dist = Math.round(chargeableKm * v.perKmRate);
     const surgeAmt = Math.round((base + dist) * (surgeMultiplier - 1.0));
     const subtotal = (base + dist) + surgeAmt;
     const gst = Math.round((subtotal + platformFee + convFee) * 0.05);
     const total = Math.round(subtotal + platformFee + convFee + gst);
-    return { base, dist, surgeAmt, subtotal, gst, total, v };
+    return { base, dist, surgeAmt, subtotal, gst, total, v, chargeableKm };
   }
 
   // Update preview prices on the 3 Vehicle cards
@@ -829,22 +849,23 @@ function updateFare() {
     else if (selectedParcelCategory === 'ELECTRONICS') { catIcon = '📱'; catTitle = 'Electronics'; }
 
     let weightLabel = 'Up to 20 kg';
+    const chargeableKm = Math.max(0, currentTripDistanceKm - 1.5);
+    const parcelDistRate = 12.0; // ₹12/km parcel rate
+    finalDist = Math.round(chargeableKm * parcelDistRate);
+
     if (weight === 'CUSTOM_50_PLUS') {
       finalBase = 120 + Math.max(0, customKg - 50) * 2;
-      finalDist = 20;
       weightLabel = `${customKg} kg (Commercial Freight)`;
       serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
       serviceDesc = `Custom Heavy Freight (${customKg} kg) • Dedicated Two-Wheeler / Cargo`;
     } else if (weight === '20_TO_50KG' || weight === 'TWO_TO_FIVE_KG') {
       finalBase = 75;
-      finalDist = 16;
       weightLabel = '20 kg to 50 kg';
       serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
       serviceDesc = `Heavy Package (20 to 50 kg) • Safe Handling & Secure Strap`;
     } else {
       // UP_TO_20KG (or UP_TO_2KG)
       finalBase = 45;
-      finalDist = 12;
       weightLabel = 'Up to 20 kg';
       serviceName = `Holido Parcel ${catTitle} (${catIcon})`;
       serviceDesc = `Standard Courier (${catTitle}) • Up to 20 kg Package`;
@@ -878,6 +899,17 @@ function updateFare() {
   if (elServiceDesc) elServiceDesc.innerText = serviceDesc;
   if (elSafetyBadge) elSafetyBadge.innerText = safetyMsg;
   if (elBtnBook) elBtnBook.innerText = btnLabel;
+
+  // Real-time trip distance & duration estimation UI
+  const elKm = document.getElementById('displayTripKm');
+  const elEta = document.getElementById('displayTripEta');
+  const elRate = document.getElementById('displayRatePerKm');
+  if (elKm) elKm.innerText = `${currentTripDistanceKm.toFixed(1)} km`;
+  if (elEta) elEta.innerText = `${currentTripDurationMin} mins`;
+  if (elRate) {
+    const r = isBike ? (VEHICLE_DATA[selectedVehicleType]?.perKmRate || 10) : 12;
+    elRate.innerText = `₹${r}/km`;
+  }
 
   // Surge Multiplier UI Row & Banner
   const surgeBanner = document.getElementById('fareSurgeBanner');
@@ -934,17 +966,23 @@ function customerRequestRide() {
   const dropVal = document.getElementById('dropAddr') ? document.getElementById('dropAddr').value : 'Vastrapur Lake, Ahmedabad, Gujarat';
 
   activeRide = {
-    id: 'ride-' + Math.floor(Math.random() * 8999 + 1000),
+    id: 'HLD-TRIP-' + Math.floor(Math.random() * 8999 + 1000),
     serviceType: currentService,
     vehicleType: isBike ? selectedVehicleType : 'PARCEL',
     vehicleObj: isBike ? selectedVeh : { name: `Parcel - ${parcelDetailsText}`, icon: '📦' },
     status: 'SEARCHING_CAPTAIN',
     otp: otp,
     fare: fareVal,
+    baseFare: isBike ? selectedVeh.baseFare : 35,
+    distCharge: Math.round(Math.max(0, currentTripDistanceKm - 1.5) * (isBike ? selectedVeh.perKmRate : 12)),
+    platformFee: 3.00,
+    gst: Math.round(fareVal * 0.05),
     earning: earningVal,
     payment: { ...selectedPaymentMethod },
     pickup: pickupVal,
     drop: dropVal,
+    distanceKm: currentTripDistanceKm,
+    durationMin: currentTripDurationMin,
     parcelCategory: selectedParcelCategory,
     parcelWeight: weight,
     parcelDetails: parcelDetailsText
@@ -1122,6 +1160,29 @@ function captainCompleteTrip() {
   document.getElementById('btnCapArrive').classList.remove('hidden');
   document.getElementById('btnCapComplete').classList.add('hidden');
 
+  // Save Completed Trip to Customer History in localStorage
+  saveCompletedTripToHistory({
+    id: activeRide.id || `HLD-TRIP-${Math.floor(1000 + Math.random() * 9000)}`,
+    serviceType: activeRide.serviceType,
+    vehicleName: activeRide.vehicleObj?.name || 'Holido Ride',
+    vehicleIcon: activeRide.vehicleObj?.icon || '🏍️',
+    pickup: activeRide.pickup,
+    drop: activeRide.drop,
+    distanceKm: activeRide.distanceKm || currentTripDistanceKm,
+    durationMin: activeRide.durationMin || currentTripDurationMin,
+    totalFare: activeRide.fare,
+    baseFare: activeRide.baseFare || 25,
+    distCharge: activeRide.distCharge || 33,
+    platformFee: activeRide.platformFee || 3,
+    gst: activeRide.gst || 3,
+    paymentMethod: activeRide.payment?.name || 'Cash',
+    captainName: 'Rajesh Patel (Hero Splendor Plus)',
+    rating: 5,
+    feedback: 'Very punctual and polite rider. Provided sanitized helmet and rode safely!',
+    dateStr: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    status: 'COMPLETED'
+  });
+
   // Customer App: Show Anonymous Review Form
   document.getElementById('custTrackingView').classList.add('hidden');
   const reviewModal = document.getElementById('custReviewModal');
@@ -1155,11 +1216,28 @@ function submitCustomerReview() {
   const isBike = currentService === 'BIKE_TAXI';
   const badge = isBike ? 'Verified Holido Rider 🛡️' : 'Verified Parcel Sender 🛡️';
 
+  // Update latest trip in history with rating
+  const trips = getCustomerTrips();
+  if (trips.length > 0) {
+    trips[0].rating = customerSelectedRating;
+    trips[0].feedback = comment;
+    localStorage.setItem('holido_customer_trips', JSON.stringify(trips));
+  }
+
   document.getElementById('custReviewModal').classList.add('hidden');
   document.getElementById('custBookingView').classList.remove('hidden');
 
   alert(
     `🎉 ANONYMOUS REVIEW SUBMITTED!\n\n` +
+    `• Service: ${isBike ? 'Bike Taxi' : 'Parcel Delivery'}\n` +
+    `• Rating: ${customerSelectedRating} ★\n` +
+    `• Public Badge: ${badge}\n` +
+    `• Review: "${comment}"\n\n` +
+    `🛡️ Safety Shield Active: Your personal name and contact details are permanently hidden from the Captain. It appears on Captain's profile anonymously!`
+  );
+
+  setToast('Anonymous review recorded. Ready for next trip!');
+}
     `• Service: ${isBike ? 'Bike Taxi' : 'Parcel Delivery'}\n` +
     `• Rating: ${customerSelectedRating} ★\n` +
     `• Public Badge: ${badge}\n` +
@@ -1369,3 +1447,572 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Holido PWA ServiceWorker registration failed:', err));
   });
 }
+
+// ================= CUSTOMER NAVIGATION & VIEW SWITCHER =================
+function switchCustomerTab(tab) {
+  const viewBooking = document.getElementById('custBookingView');
+  const viewTracking = document.getElementById('custTrackingView');
+  const viewTrips = document.getElementById('custTripsView');
+  const viewProfile = document.getElementById('custProfileView');
+  const reviewModal = document.getElementById('custReviewModal');
+  const serviceTabsRow = document.getElementById('custServiceTabsRow');
+
+  const btnBook = document.getElementById('cnavBook');
+  const btnTrips = document.getElementById('cnavTrips');
+  const btnProfile = document.getElementById('cnavProfile');
+
+  [btnBook, btnTrips, btnProfile].forEach(b => b?.classList.remove('active'));
+  [viewBooking, viewTracking, viewTrips, viewProfile, reviewModal].forEach(v => v?.classList.add('hidden'));
+
+  if (tab === 'BOOKING') {
+    btnBook?.classList.add('active');
+    serviceTabsRow?.classList.remove('hidden');
+    if (activeRide && activeRide.status !== 'COMPLETED') {
+      viewTracking?.classList.remove('hidden');
+    } else {
+      viewBooking?.classList.remove('hidden');
+    }
+  } else if (tab === 'TRIPS') {
+    btnTrips?.classList.add('active');
+    serviceTabsRow?.classList.add('hidden');
+    viewTrips?.classList.remove('hidden');
+    renderCustomerTrips('ALL');
+  } else if (tab === 'PROFILE') {
+    btnProfile?.classList.add('active');
+    serviceTabsRow?.classList.add('hidden');
+    viewProfile?.classList.remove('hidden');
+    renderCustomerProfile();
+  }
+}
+
+// ================= CUSTOMER PROFILE & ACCOUNT ENGINE =================
+const DEFAULT_CUSTOMER_PROFILE = {
+  name: 'Akshay Kumar',
+  phone: '+91 98765 43210',
+  email: 'akshay.kumar@gmail.com',
+  rating: 4.95,
+  totalTrips: 28,
+  walletBalance: 350.00,
+  coins: 180,
+  emergencyContact: 'Family (+91 98250 12345)'
+};
+
+function getCustomerProfile() {
+  try {
+    const raw = localStorage.getItem('holido_customer_profile');
+    if (raw) return { ...DEFAULT_CUSTOMER_PROFILE, ...JSON.parse(raw) };
+  } catch (e) {
+    console.warn('Error reading customer profile:', e);
+  }
+  return DEFAULT_CUSTOMER_PROFILE;
+}
+
+function renderCustomerProfile() {
+  const prof = getCustomerProfile();
+  const nameEl = document.getElementById('profNameDisplay');
+  const phoneEl = document.getElementById('profPhoneDisplay');
+  const avatarEl = document.getElementById('profAvatarText');
+  const walletEl = document.getElementById('profWalletBalance');
+  const coinsEl = document.getElementById('profCoinsBalance');
+  const sosEl = document.getElementById('profSosContact');
+
+  if (nameEl) nameEl.innerText = prof.name;
+  if (phoneEl) phoneEl.innerText = prof.phone;
+  if (avatarEl) {
+    const initials = prof.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    avatarEl.innerText = initials || 'AK';
+  }
+  if (walletEl) walletEl.innerText = `₹${prof.walletBalance.toFixed(2)}`;
+  if (coinsEl) coinsEl.innerText = `${prof.coins} 🪙`;
+  if (sosEl) sosEl.innerText = prof.emergencyContact;
+}
+
+function openEditProfileModal() {
+  const prof = getCustomerProfile();
+  document.getElementById('editProfName').value = prof.name;
+  document.getElementById('editProfPhone').value = prof.phone;
+  document.getElementById('editProfEmail').value = prof.email;
+  document.getElementById('editProfSos').value = prof.emergencyContact;
+  document.getElementById('custEditProfileModal')?.classList.remove('hidden');
+}
+
+function closeEditProfileModal() {
+  document.getElementById('custEditProfileModal')?.classList.add('hidden');
+}
+
+function saveCustomerProfile() {
+  const name = document.getElementById('editProfName').value.trim() || 'Holido Rider';
+  const phone = document.getElementById('editProfPhone').value.trim() || '+91 98765 43210';
+  const email = document.getElementById('editProfEmail').value.trim() || 'rider@holido.in';
+  const emergencyContact = document.getElementById('editProfSos').value.trim() || 'Family (+91 98250 12345)';
+
+  const prof = getCustomerProfile();
+  const updated = { ...prof, name, phone, email, emergencyContact };
+  localStorage.setItem('holido_customer_profile', JSON.stringify(updated));
+  closeEditProfileModal();
+  renderCustomerProfile();
+  setToast('✅ Customer profile updated successfully!');
+}
+
+function openCreateProfileModal() {
+  const newName = prompt('Enter New Customer Full Name (e.g. Rahul Sharma):', 'Rahul Sharma');
+  if (!newName) return;
+  const newPhone = prompt('Enter Customer Mobile Number:', '+91 98250 99887') || '+91 98250 99887';
+  const updated = {
+    ...DEFAULT_CUSTOMER_PROFILE,
+    name: newName,
+    phone: newPhone,
+    email: `${newName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+    walletBalance: 200.00,
+    coins: 50
+  };
+  localStorage.setItem('holido_customer_profile', JSON.stringify(updated));
+  renderCustomerProfile();
+  setToast(`🎉 Welcome ${newName}! Customer account created & loaded.`);
+}
+
+function addMoneyToWallet() {
+  const amountStr = prompt('Enter amount to add to Holido Wallet (₹):', '500');
+  const amount = parseFloat(amountStr);
+  if (isNaN(amount) || amount <= 0) return;
+  const prof = getCustomerProfile();
+  prof.walletBalance += amount;
+  localStorage.setItem('holido_customer_profile', JSON.stringify(prof));
+  renderCustomerProfile();
+  setToast(`💳 ₹${amount.toFixed(2)} added to Holido Wallet! New balance: ₹${prof.walletBalance.toFixed(2)}`);
+}
+
+function quickBookSavedPlace(addr) {
+  const dropInput = document.getElementById('dropAddr');
+  if (dropInput) {
+    dropInput.value = addr;
+    handleLocationInput('drop', addr);
+  }
+  switchCustomerTab('BOOKING');
+  setToast(`📍 Destination set to: ${addr}`);
+}
+
+// ================= CUSTOMER TRIP HISTORY & TAX INVOICE ENGINE =================
+const DEFAULT_TRIP_HISTORY = [
+  {
+    id: 'HLD-TRIP-7491',
+    serviceType: 'BIKE_TAXI',
+    vehicleName: 'Holido Bike',
+    vehicleIcon: '🏍️',
+    pickup: 'SG Highway, Ahmedabad, Gujarat',
+    drop: 'Vastrapur Lake, Ahmedabad, Gujarat',
+    distanceKm: 4.8,
+    durationMin: 12,
+    totalFare: 64,
+    baseFare: 25,
+    distCharge: 33,
+    platformFee: 3,
+    gst: 3,
+    paymentMethod: 'UPI (Google Pay)',
+    captainName: 'Rajesh Patel (Hero Splendor Plus)',
+    rating: 5,
+    feedback: 'Very punctual and polite rider. Provided clean helmet!',
+    dateStr: '24 Nov 2026, 05:42 PM',
+    status: 'COMPLETED'
+  },
+  {
+    id: 'HLD-TRIP-6820',
+    serviceType: 'PARCEL_DELIVERY',
+    vehicleName: 'Parcel - Box (Up to 20kg)',
+    vehicleIcon: '📦',
+    pickup: 'Navrangpura, Ahmedabad, Gujarat',
+    drop: 'C.G. Road, Ahmedabad, Gujarat',
+    distanceKm: 3.1,
+    durationMin: 9,
+    totalFare: 55,
+    baseFare: 35,
+    distCharge: 19,
+    platformFee: 3,
+    gst: 3,
+    paymentMethod: 'Cash',
+    captainName: 'Mukesh Sharma (Honda Activa)',
+    rating: 5,
+    feedback: 'Handled fragile package with extra care.',
+    dateStr: '22 Nov 2026, 02:15 PM',
+    status: 'COMPLETED'
+  },
+  {
+    id: 'HLD-TRIP-5192',
+    serviceType: 'BIKE_TAXI',
+    vehicleName: 'Holido Auto',
+    vehicleIcon: '🛺',
+    pickup: 'Maninagar, Ahmedabad, Gujarat',
+    drop: 'Kalupur Railway Station, Ahmedabad, Gujarat',
+    distanceKm: 5.4,
+    durationMin: 16,
+    totalFare: 98,
+    baseFare: 35,
+    distCharge: 55,
+    platformFee: 3,
+    gst: 5,
+    paymentMethod: 'Holido Wallet',
+    captainName: 'Irfan Khan (Bajaj RE Compact)',
+    rating: 4,
+    feedback: 'Fast ride through station traffic.',
+    dateStr: '20 Nov 2026, 09:30 AM',
+    status: 'COMPLETED'
+  }
+];
+
+function getCustomerTrips() {
+  try {
+    const raw = localStorage.getItem('holido_customer_trips');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    console.warn('Error reading trips from storage:', e);
+  }
+  return DEFAULT_TRIP_HISTORY;
+}
+
+function saveCompletedTripToHistory(newTrip) {
+  const trips = getCustomerTrips();
+  trips.unshift(newTrip);
+  localStorage.setItem('holido_customer_trips', JSON.stringify(trips));
+  updateTripBadges();
+}
+
+function updateTripBadges() {
+  const trips = getCustomerTrips();
+  const badge = document.getElementById('cnavTripBadge');
+  const pill = document.getElementById('tripsCountPill');
+  if (badge) badge.innerText = trips.length;
+  if (pill) pill.innerText = `${trips.length} Trips`;
+}
+
+function renderCustomerTrips(filter = 'ALL') {
+  const container = document.getElementById('customerTripsListContainer');
+  if (!container) return;
+  const trips = getCustomerTrips();
+  updateTripBadges();
+
+  let filtered = trips;
+  if (filter === 'BIKE') filtered = trips.filter(t => t.vehicleName && t.vehicleName.toLowerCase().includes('bike'));
+  else if (filter === 'AUTO') filtered = trips.filter(t => t.vehicleName && t.vehicleName.toLowerCase().includes('auto'));
+  else if (filter === 'CAR') filtered = trips.filter(t => t.vehicleName && (t.vehicleName.toLowerCase().includes('cab') || t.vehicleName.toLowerCase().includes('car')));
+  else if (filter === 'PARCEL') filtered = trips.filter(t => t.serviceType === 'PARCEL_DELIVERY' || (t.vehicleName && t.vehicleName.toLowerCase().includes('parcel')));
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:30px 10px; color:#64748B;">
+        <span style="font-size:32px;">📜</span>
+        <p style="font-size:12px; margin-top:8px;">No trips found in this category.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(t => `
+    <div class="trip-card-item">
+      <div class="trip-card-head">
+        <div class="trip-type-badge">
+          <span>${t.vehicleIcon || '🏍️'}</span>
+          <span>${t.vehicleName}</span>
+        </div>
+        <span class="trip-status-pill">${t.status || 'COMPLETED'}</span>
+      </div>
+
+      <div style="font-size:10px; color:#64748B;">📅 ${t.dateStr} • Trip ID: <b>${t.id}</b></div>
+
+      <div class="trip-route-box">
+        <div class="trip-route-row">
+          <span style="color:#059669; font-size:12px;">●</span>
+          <span><b>Pickup:</b> ${t.pickup}</span>
+        </div>
+        <div class="trip-route-row">
+          <span style="color:#DC2626; font-size:12px;">■</span>
+          <span><b>Drop:</b> ${t.drop}</span>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; background:#F8FAFC; padding:6px 8px; border-radius:6px;">
+        <span>📏 <b>${t.distanceKm} km</b> • ⏱️ ${t.durationMin} mins</span>
+        <span>💳 <b>${t.paymentMethod}</b></span>
+      </div>
+
+      <div class="trip-card-footer">
+        <div>
+          <span class="trip-fare-txt">₹${t.totalFare}</span>
+          <span style="font-size:10px; color:#64748B;">(incl. taxes)</span>
+        </div>
+        <button class="btn-invoice" onclick="viewTripInvoice('${t.id}')">🧾 View Tax Invoice</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterTrips(type, btn) {
+  const pills = btn.parentElement.querySelectorAll('.pill');
+  pills.forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderCustomerTrips(type);
+}
+
+function viewTripInvoice(tripId) {
+  const trips = getCustomerTrips();
+  const trip = trips.find(t => t.id === tripId) || trips[0];
+  if (!trip) return;
+
+  const prof = getCustomerProfile();
+  const modal = document.getElementById('custInvoiceModal');
+  const content = document.getElementById('invoicePaperContent');
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <div style="text-align:center; border-bottom:2px dashed #CBD5E1; padding-bottom:14px; margin-bottom:12px;">
+      <div style="font-size:22px; font-weight:900; color:#042045;">HOLIDO MOBILITY</div>
+      <div style="font-size:10px; color:#64748B;">Holido Technologies Pvt. Ltd. • GSTIN: 24AABCH1234F1Z6</div>
+      <div style="font-size:12px; font-weight:800; color:#006FD4; margin-top:4px;">TAX INVOICE / RIDE RECEIPT</div>
+    </div>
+
+    <div style="font-size:11px; line-height:1.5; margin-bottom:12px; color:#334155;">
+      <div><b>Invoice No:</b> ${trip.id}</div>
+      <div><b>Date:</b> ${trip.dateStr}</div>
+      <div><b>Customer:</b> ${prof.name} (${prof.phone})</div>
+      <div><b>Captain:</b> ${trip.captainName || 'Rajesh Patel'}</div>
+      <div><b>Vehicle:</b> ${trip.vehicleIcon} ${trip.vehicleName}</div>
+    </div>
+
+    <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px; font-size:11px; margin-bottom:12px;">
+      <div style="margin-bottom:4px;"><b>Pickup:</b> ${trip.pickup}</div>
+      <div><b>Drop:</b> ${trip.drop}</div>
+      <div style="margin-top:4px; color:#64748B;">Total Distance: <b>${trip.distanceKm} km</b> • Duration: <b>${trip.durationMin} mins</b></div>
+    </div>
+
+    <div style="font-size:11.5px; border-top:1px solid #E2E8F0; padding-top:8px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>Base Fare (first 1.5 km)</span>
+        <span>₹${(trip.baseFare || 25).toFixed(2)}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>Distance Charge (${Math.max(0, trip.distanceKm - 1.5).toFixed(1)} km)</span>
+        <span>₹${(trip.distCharge || 33).toFixed(2)}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>Platform Access Fee</span>
+        <span>₹${(trip.platformFee || 3).toFixed(2)}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span>GST @ 5%</span>
+        <span>₹${(trip.gst || 3).toFixed(2)}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:900; color:#042045; border-top:2px solid #0F172A; padding-top:8px; margin-top:6px;">
+        <span>TOTAL PAID (${trip.paymentMethod})</span>
+        <span>₹${trip.totalFare.toFixed(2)}</span>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button onclick="closeInvoiceModal()" style="flex:1; padding:9px; background:#F1F5F9; border:1px solid #CBD5E1; border-radius:8px; font-weight:bold; cursor:pointer;">Close</button>
+      <button onclick="window.print()" style="flex:1; padding:9px; background:#006FD4; color:#FFF; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🖨️ Print / PDF</button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeInvoiceModal() {
+  document.getElementById('custInvoiceModal')?.classList.add('hidden');
+}
+
+// ================= REAL-TIME GEOCODING, GPS & DISTANCE ENGINE =================
+const LOCAL_GEO_DATABASE = [
+  { name: 'SG Highway, Ahmedabad, Gujarat', lat: 23.0338, lon: 72.5085, landmark: 'Near ISKCON Temple & SBR' },
+  { name: 'Vastrapur Lake, Ahmedabad, Gujarat', lat: 23.0375, lon: 72.5310, landmark: 'Amphitheatre & Alpha One Mall' },
+  { name: 'Navrangpura, Ahmedabad, Gujarat', lat: 23.0365, lon: 72.5611, landmark: 'Commerce Six Roads' },
+  { name: 'C.G. Road, Ahmedabad, Gujarat', lat: 23.0298, lon: 72.5574, landmark: 'Municipal Market' },
+  { name: 'Prahlad Nagar, Ahmedabad, Gujarat', lat: 23.0125, lon: 72.5118, landmark: 'Garden & Corporate Road' },
+  { name: 'Bopal, Ahmedabad, Gujarat', lat: 23.0330, lon: 72.4630, landmark: 'South Bopal & SP Ring Road' },
+  { name: 'Sindhu Bhavan Road, Ahmedabad, Gujarat', lat: 23.0452, lon: 72.4988, landmark: 'Taj Skyline & Cafes' },
+  { name: 'Maninagar, Ahmedabad, Gujarat', lat: 22.9978, lon: 72.6022, landmark: 'Kankaria Lake Front' },
+  { name: 'Kalupur Railway Station, Ahmedabad, Gujarat', lat: 23.0233, lon: 72.6001, landmark: 'Central Railway Junction' },
+  { name: 'Sardar Vallabhbhai Patel Airport, Ahmedabad, Gujarat', lat: 23.0734, lon: 72.6266, landmark: 'International Terminal 2' },
+  { name: 'Science City, Ahmedabad, Gujarat', lat: 23.0782, lon: 72.4965, landmark: 'Aquatic Gallery & Robot Park' },
+  { name: 'GIFT City, Gandhinagar, Gujarat', lat: 23.1610, lon: 72.6840, landmark: 'International Financial Tech City' },
+  { name: 'Surat Railway Station, Surat, Gujarat', lat: 21.2049, lon: 72.8407, landmark: 'Surat Central' },
+  { name: 'Athwalines, Surat, Gujarat', lat: 21.1762, lon: 72.8028, landmark: 'Chopati & Circuit House' },
+  { name: 'Alkapuri, Vadodara, Gujarat', lat: 22.3107, lon: 73.1706, landmark: 'Railway Station West' },
+  { name: 'Yagnik Road, Rajkot, Gujarat', lat: 22.2986, lon: 70.7963, landmark: 'Imperial Palace Area' },
+  { name: 'Marine Drive, Mumbai, Maharashtra', lat: 18.9432, lon: 72.8230, landmark: 'Queens Necklace' },
+  { name: 'Bandra West, Mumbai, Maharashtra', lat: 19.0596, lon: 72.8295, landmark: 'Linking Road & Hill Road' },
+  { name: 'Connaught Place, New Delhi', lat: 28.6315, lon: 77.2167, landmark: 'Inner Circle & Metro' },
+  { name: 'Koramangala, Bengaluru, Karnataka', lat: 12.9352, lon: 77.6245, landmark: 'Sony Signal 5th Block' }
+];
+
+let locationSearchDebounce = null;
+
+function handleLocationInput(field, query) {
+  checkServiceableLocations();
+  const dropdownId = field === 'pickup' ? 'pickupResultsDropdown' : 'dropResultsDropdown';
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+
+  const q = (query || '').trim().toLowerCase();
+  if (q.length < 2) {
+    dropdown.classList.add('hidden');
+    return;
+  }
+
+  // 1. Instant local match
+  const localMatches = LOCAL_GEO_DATABASE.filter(item =>
+    item.name.toLowerCase().includes(q) || (item.landmark && item.landmark.toLowerCase().includes(q))
+  );
+
+  renderDropdownResults(field, localMatches);
+
+  // 2. Debounced Live OpenStreetMap Search
+  clearTimeout(locationSearchDebounce);
+  locationSearchDebounce = setTimeout(() => {
+    fetchLiveNominatim(field, query);
+  }, 400);
+}
+
+function fetchLiveNominatim(field, query) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`;
+  fetch(url, { headers: { 'Accept': 'application/json' } })
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        const liveItems = data.map(d => ({
+          name: d.display_name.split(',').slice(0, 3).join(', '),
+          lat: parseFloat(d.lat),
+          lon: parseFloat(d.lon),
+          landmark: d.display_name.split(',').slice(2, 5).join(', ')
+        }));
+        renderDropdownResults(field, liveItems);
+      }
+    })
+    .catch(err => {
+      console.log('Online geocode fallback active:', err);
+    });
+}
+
+function renderDropdownResults(field, items) {
+  const dropdownId = field === 'pickup' ? 'pickupResultsDropdown' : 'dropResultsDropdown';
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+
+  if (!items || items.length === 0) {
+    dropdown.innerHTML = `<div style="padding:10px; font-size:11px; color:#64748B;">No matches found. Try area name or landmark.</div>`;
+    dropdown.classList.remove('hidden');
+    return;
+  }
+
+  dropdown.innerHTML = items.slice(0, 6).map(it => `
+    <div class="loc-dropdown-item" onclick="selectLocationResult('${field}', '${it.name.replace(/'/g, "\\'")}', ${it.lat}, ${it.lon})">
+      <span class="icon">📍</span>
+      <div style="flex:1;">
+        <b>${it.name}</b>
+        <span class="sub">${it.landmark || 'Ahmedabad, Gujarat'}</span>
+      </div>
+    </div>
+  `).join('');
+
+  dropdown.classList.remove('hidden');
+}
+
+function selectLocationResult(field, name, lat, lon) {
+  const input = document.getElementById(field === 'pickup' ? 'pickupAddr' : 'dropAddr');
+  if (input) input.value = name;
+
+  const dropdown = document.getElementById(field === 'pickup' ? 'pickupResultsDropdown' : 'dropResultsDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  if (field === 'pickup') {
+    currentPickupCoords = { lat, lon, name };
+    PICKUP_POS.label = name;
+  } else {
+    currentDropCoords = { lat, lon, name };
+    DROP_POS.label = name;
+  }
+
+  recalculateDistanceAndRoute();
+  checkServiceableLocations();
+  updateFare();
+  drawMap();
+  drawCustMiniMap();
+  setToast(`📍 Selected ${field.toUpperCase()}: ${name}`);
+}
+
+function recalculateDistanceAndRoute() {
+  const dist = calcHaversineDistanceKm(
+    currentPickupCoords.lat, currentPickupCoords.lon,
+    currentDropCoords.lat, currentDropCoords.lon
+  );
+  currentTripDistanceKm = dist;
+  currentTripDurationMin = Math.max(4, Math.round(dist * 2.4 + 2));
+
+  const elKm = document.getElementById('displayTripKm');
+  const elEta = document.getElementById('displayTripEta');
+  if (elKm) elKm.innerText = `${currentTripDistanceKm.toFixed(1)} km`;
+  if (elEta) elEta.innerText = `${currentTripDurationMin} mins`;
+}
+
+function calcHaversineDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const rawDist = R * c;
+  return Math.max(1.2, Math.round(rawDist * 10) / 10);
+}
+
+function useCurrentGpsLocation() {
+  setToast('📡 Detecting current GPS location...');
+  if (!navigator.geolocation) {
+    applyFallbackGpsLocation();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+        .then(r => r.json())
+        .then(data => {
+          const name = data.display_name ? data.display_name.split(',').slice(0, 3).join(', ') : 'Current GPS Location, Ahmedabad';
+          selectLocationResult('pickup', name, lat, lon);
+          setToast(`🎯 GPS Location detected: ${name}`);
+        })
+        .catch(() => {
+          selectLocationResult('pickup', 'Current GPS Location, Ahmedabad', lat, lon);
+          setToast(`🎯 GPS Location detected (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+        });
+    },
+    (err) => {
+      console.warn('Geolocation denied or unavailable:', err);
+      applyFallbackGpsLocation();
+    },
+    { timeout: 6000 }
+  );
+}
+
+function applyFallbackGpsLocation() {
+  selectLocationResult('pickup', 'SG Highway, Ahmedabad, Gujarat', 23.0338, 72.5085);
+  setToast('📍 Current GPS Location set: SG Highway, Ahmedabad (Pilot Hub)');
+}
+
+// Close location dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.loc-input-wrap')) {
+    document.getElementById('pickupResultsDropdown')?.classList.add('hidden');
+    document.getElementById('dropResultsDropdown')?.classList.add('hidden');
+  }
+});
+
+// App Startup Initializations for Profile, Trips & Distance
+renderCustomerProfile();
+renderCustomerTrips('ALL');
+recalculateDistanceAndRoute();
+updateTripBadges();
