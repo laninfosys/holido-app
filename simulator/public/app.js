@@ -1238,15 +1238,6 @@ function submitCustomerReview() {
 
   setToast('Anonymous review recorded. Ready for next trip!');
 }
-    `• Service: ${isBike ? 'Bike Taxi' : 'Parcel Delivery'}\n` +
-    `• Rating: ${customerSelectedRating} ★\n` +
-    `• Public Badge: ${badge}\n` +
-    `• Review: "${comment}"\n\n` +
-    `🛡️ Safety Shield Active: Your personal name and contact details are permanently hidden from the Captain. It appears on Captain's profile anonymously!`
-  );
-
-  setToast('Anonymous review recorded. Ready for next trip!');
-}
 
 function skipCustomerReview() {
   const reviewModal = document.getElementById('custReviewModal');
@@ -1855,8 +1846,9 @@ function handleLocationInput(field, query) {
   if (!dropdown) return;
 
   const q = (query || '').trim().toLowerCase();
-  if (q.length < 2) {
-    dropdown.classList.add('hidden');
+  if (q.length < 1) {
+    // Show popular Ahmedabad landmark options on initial focus
+    renderDropdownResults(field, LOCAL_GEO_DATABASE.slice(0, 6));
     return;
   }
 
@@ -1865,13 +1857,13 @@ function handleLocationInput(field, query) {
     item.name.toLowerCase().includes(q) || (item.landmark && item.landmark.toLowerCase().includes(q))
   );
 
-  renderDropdownResults(field, localMatches);
+  renderDropdownResults(field, localMatches.length > 0 ? localMatches : LOCAL_GEO_DATABASE.slice(0, 5));
 
   // 2. Debounced Live OpenStreetMap Search
   clearTimeout(locationSearchDebounce);
   locationSearchDebounce = setTimeout(() => {
     fetchLiveNominatim(field, query);
-  }, 400);
+  }, 350);
 }
 
 function fetchLiveNominatim(field, query) {
@@ -1906,7 +1898,7 @@ function renderDropdownResults(field, items) {
   }
 
   dropdown.innerHTML = items.slice(0, 6).map(it => `
-    <div class="loc-dropdown-item" onclick="selectLocationResult('${field}', '${it.name.replace(/'/g, "\\'")}', ${it.lat}, ${it.lon})">
+    <div class="loc-dropdown-item" onmousedown="selectLocationResult('${field}', '${it.name.replace(/'/g, "\\'")}', ${it.lat}, ${it.lon})" onclick="selectLocationResult('${field}', '${it.name.replace(/'/g, "\\'")}', ${it.lat}, ${it.lon})">
       <span class="icon">📍</span>
       <div style="flex:1;">
         <b>${it.name}</b>

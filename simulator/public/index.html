@@ -6,7 +6,7 @@
   <title>Holido - Bike Taxi & Parcel Ecosystem Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2">
   
   <!-- PWA & Mobile Web App Capabilities -->
   <link rel="manifest" href="manifest.json">
@@ -74,7 +74,7 @@
                 <span class="loc-icon pickup">●</span>
                 <div class="loc-text loc-input-wrap" style="flex:1;">
                   <span class="loc-label">PICKUP LOCATION</span>
-                  <input type="text" id="pickupAddr" value="SG Highway, Ahmedabad, Gujarat" oninput="handleLocationInput('pickup', this.value)" placeholder="Search landmark, street or GPS area..." autocomplete="off">
+                  <input type="text" id="pickupAddr" value="SG Highway, Ahmedabad, Gujarat" onfocus="handleLocationInput('pickup', this.value)" oninput="handleLocationInput('pickup', this.value)" placeholder="Search landmark, street or GPS area..." autocomplete="off">
                   <button type="button" class="btn-gps-loc" onclick="useCurrentGpsLocation()" title="Detect current GPS location">📍 GPS</button>
                   <div id="pickupResultsDropdown" class="loc-dropdown hidden"></div>
                 </div>
@@ -84,7 +84,7 @@
                 <span class="loc-icon drop">■</span>
                 <div class="loc-text loc-input-wrap" style="flex:1;">
                   <span class="loc-label">DESTINATION / DROP</span>
-                  <input type="text" id="dropAddr" value="Vastrapur Lake, Ahmedabad, Gujarat" oninput="handleLocationInput('drop', this.value)" placeholder="Search destination area or city in India..." autocomplete="off">
+                  <input type="text" id="dropAddr" value="Vastrapur Lake, Ahmedabad, Gujarat" onfocus="handleLocationInput('drop', this.value)" oninput="handleLocationInput('drop', this.value)" placeholder="Search destination area or city in India..." autocomplete="off">
                   <div id="dropResultsDropdown" class="loc-dropdown hidden"></div>
                 </div>
               </div>
@@ -774,6 +774,6 @@
     </button>
   </nav>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.2"></script>
 </body>
 </html>

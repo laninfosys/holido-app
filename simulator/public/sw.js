@@ -1,5 +1,5 @@
 // Holido Service Worker for PWA Offline & Install Prompt
-const CACHE_NAME = 'holido-cache-v1';
+const CACHE_NAME = 'holido-cache-v2.2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
