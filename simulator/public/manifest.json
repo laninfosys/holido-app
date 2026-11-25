@@ -1,0 +1,19 @@
+{
+  "name": "Holido - Bike Taxi & Parcel",
+  "short_name": "Holido",
+  "description": "Holido Ride-Hailing, Auto, Cab & Parcel Delivery Ecosystem",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#006FD4",
+  "icons": [
+    {
+      "src": "assets/holido_emblem.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

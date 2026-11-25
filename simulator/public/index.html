@@ -7,6 +7,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  
+  <!-- PWA & Mobile Web App Capabilities -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#006FD4">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Holido">
+  <link rel="apple-touch-icon" href="assets/holido_emblem.png">
+  <link rel="icon" type="image/png" href="assets/holido_emblem.png">
 </head>
 <body>
   <!-- Top App Navigation Bar -->
@@ -25,7 +35,7 @@
   <!-- Main Simulator Container -->
   <main class="simulator-layout">
     <!-- LEFT DEVICE: CUSTOMER APP -->
-    <div class="device-column">
+    <div class="device-column mob-active" id="colCust">
       <div class="device-label">Customer Mobile App</div>
       <div class="phone-frame">
         <div class="phone-notch"></div>
@@ -407,7 +417,7 @@
     </div>
 
     <!-- CENTER: LIVE GPS MAP SIMULATOR -->
-    <div class="map-column">
+    <div class="map-column" id="colMap">
       <div class="map-header">
         <div class="map-title">📍 Live Geospatial Dispatch Engine</div>
         <div class="map-legend">
@@ -426,7 +436,7 @@
     </div>
 
     <!-- RIGHT DEVICE: CAPTAIN APP -->
-    <div class="device-column">
+    <div class="device-column" id="colCap">
       <div class="device-label">Captain (Driver) Mobile App</div>
       <div class="phone-frame captain-frame">
         <div class="phone-notch"></div>
@@ -562,6 +572,22 @@
       </div>
     </div>
   </main>
+
+  <!-- STICKY MOBILE NAVIGATION (Visible only on mobile screens < 860px) -->
+  <nav class="mobile-nav-bar" id="mobileNavBar">
+    <button class="mob-tab-btn active" id="btnMobCust" onclick="switchMobileView('cust')">
+      <span class="m-icon">📱</span>
+      <span>Customer App</span>
+    </button>
+    <button class="mob-tab-btn" id="btnMobMap" onclick="switchMobileView('map')">
+      <span class="m-icon">🗺️</span>
+      <span>Live Radar</span>
+    </button>
+    <button class="mob-tab-btn" id="btnMobCap" onclick="switchMobileView('cap')">
+      <span class="m-icon">🏍️</span>
+      <span>Captain App</span>
+    </button>
+  </nav>
 
   <script src="app.js"></script>
 </body>

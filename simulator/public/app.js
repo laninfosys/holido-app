@@ -1327,3 +1327,45 @@ window.addEventListener('storage', (e) => {
     setToast('📍 City Service Zones updated from Super Admin Center!');
   }
 });
+
+// ================= MOBILE NAVIGATION & PWA LOGIC =================
+function switchMobileView(mode) {
+  const colCust = document.getElementById('colCust');
+  const colMap = document.getElementById('colMap');
+  const colCap = document.getElementById('colCap');
+  const btnCust = document.getElementById('btnMobCust');
+  const btnMap = document.getElementById('btnMobMap');
+  const btnCap = document.getElementById('btnMobCap');
+
+  if (!colCust || !colMap || !colCap) return;
+
+  colCust.classList.remove('mob-active');
+  colMap.classList.remove('mob-active');
+  colCap.classList.remove('mob-active');
+
+  if (btnCust) btnCust.classList.remove('active');
+  if (btnMap) btnMap.classList.remove('active');
+  if (btnCap) btnCap.classList.remove('active');
+
+  if (mode === 'cust') {
+    colCust.classList.add('mob-active');
+    if (btnCust) btnCust.classList.add('active');
+  } else if (mode === 'map') {
+    colMap.classList.add('mob-active');
+    if (btnMap) btnMap.classList.add('active');
+    if (typeof drawMap === 'function') drawMap();
+  } else if (mode === 'cap') {
+    colCap.classList.add('mob-active');
+    if (btnCap) btnCap.classList.add('active');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Register PWA Service Worker for Mobile 1-Click Installation
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('Holido PWA ServiceWorker registered with scope:', reg.scope))
+      .catch(err => console.log('Holido PWA ServiceWorker registration failed:', err));
+  });
+}
